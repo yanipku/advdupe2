@@ -373,14 +373,14 @@ local function UpdateGhost(ply, toolWep)
 		PhysObj:EnableMotion( false )
 		if(tobool(ply:GetInfo("advdupe2_original_origin")))then
 			PhysObj:SetPos(toolWep:GetNetworkedVector("HeadPos", Vector(0,0,0)) + toolWep:GetNetworkedVector( "HeadOffset", Vector(0,0,0) ))
-			PhysObj:SetAngle(toolWep:GetNetworkedAngle("HeadAngle", Angle(0,0,0)))
+			PhysObj:SetAngles(toolWep:GetNetworkedAngle("HeadAngle", Angle(0,0,0)))
 		else
 			local EntAngle = toolWep:GetNetworkedAngle("HeadAngle", Angle(0,0,0))
 			if(tobool(ply:GetInfo("advdupe2_offset_world")))then EntAngle = Angle(0,0,0) end
 			trace.HitPos.Z = trace.HitPos.Z + math.Clamp((toolWep:GetNetworkedFloat("HeadZPos", 0) or 0 + tonumber(ply:GetInfo("advdupe2_offset_z")) or 0), -16000, 16000)
 			local Pos, Angle = LocalToWorld(toolWep:GetNetworkedVector("HeadOffset", Vector(0,0,0)), EntAngle, trace.HitPos, Angle(math.Clamp(tonumber(ply:GetInfo("advdupe2_offset_pitch")) or 0,-180,180), math.Clamp(tonumber(ply:GetInfo("advdupe2_offset_yaw")) or 0,-180,180), math.Clamp(tonumber(ply:GetInfo("advdupe2_offset_roll")) or 0,-180,180))) 
 			PhysObj:SetPos(Pos)
-			PhysObj:SetAngle(Angle)
+			PhysObj:SetAngles(Angle)
 		end
 		PhysObj:Wake()
 	else
@@ -1401,8 +1401,8 @@ if SERVER then
 	concommand.Add("AdvDupe2_MoveFile", MoveFile)
 	
 	//TFind files and folders on the server
-	local function TFind(ply, Search, Folders, Files, parent)
-
+	local function TFind(ply, Search, Files, Folders, parent)
+	
 		for k,v in pairs(Files)do
 			local File = {}
 			File.Name = string.Left(v, #v-4)
@@ -1410,6 +1410,7 @@ if SERVER then
 			File.Parent = parent
 			table.insert(ply.AdvDupe2.Files, File)
 		end
+		
 		for k,v in pairs(Folders)do
 			ply.AdvDupe2.FolderID=ply.AdvDupe2.FolderID+1
 			local Folder = {}
@@ -1417,7 +1418,8 @@ if SERVER then
 			Folder.Parent = parent
 			Folder.ID = ply.AdvDupe2.FolderID
 			table.insert(ply.AdvDupe2.Folders, Folder)
-			file.TFind(string.Left(Search,#Search-1)..v.."/*", function(Search2, Folders2, Files2) TFind(ply, Search2, Folders2, Files2, Folder.ID) end)
+			local Files2, Folders2 = file.Find(string.Left(Search,#Search-1)..v.."/*", "data")
+			TFind(ply, string.Left(Search,#Search-1)..v.."/*", Files2, Folders2, Folder.ID)
 		end
 		ply.AdvDupe2.SendFiles = true
 	end
@@ -1440,44 +1442,39 @@ if SERVER then
 				umsg.End()
 				return
 			end 
-			
 
+			local Files, Folders = file.Find(ply:GetAdvDupe2Folder().."/*", "data")
 			
-			file.TFind("data/"..ply:GetAdvDupe2Folder().."/*", 
-				function(Search, Folders, Files) 
-					if(!ply.AdvDupe2)then ply.AdvDupe2 = {} end
-					ply.AdvDupe2.NextSend = CurTime() + tonumber(GetConVarString("AdvDupe2_UpdateFilesDelay"))
+			if(!ply.AdvDupe2)then ply.AdvDupe2 = {} end
+			ply.AdvDupe2.NextSend = CurTime() + tonumber(GetConVarString("AdvDupe2_UpdateFilesDelay"))
 					
-					local AD1 = "adv_duplicator"
-					if(!SinglePlayer())then
-						AD1 = AD1.."/"..ply:SteamIDSafe()
-					end
-					ply.AdvDupe2.FolderID=ply.AdvDupe2.FolderID+1
-					local AD1Folder = {}
-					AD1Folder.Name = "=Adv Duplicator="
-					AD1Folder.Parent = 0
-					AD1Folder.ID = ply.AdvDupe2.FolderID
-					table.insert(ply.AdvDupe2.Folders, AD1Folder)
+			local AD1 = "adv_duplicator"
+			if(!SinglePlayer())then
+				AD1 = AD1.."/"..ply:SteamIDSafe()
+			end
+			ply.AdvDupe2.FolderID=ply.AdvDupe2.FolderID+1
+			local AD1Folder = {}
+			AD1Folder.Name = "=Adv Duplicator="
+			AD1Folder.Parent = 0
+			AD1Folder.ID = ply.AdvDupe2.FolderID
+			table.insert(ply.AdvDupe2.Folders, AD1Folder)
+			
+			if(!SinglePlayer() && tobool(GetConVarString("AdvDupe2_AllowPublicFolder")))then
+				ply.AdvDupe2.FolderID=ply.AdvDupe2.FolderID+1
+				local Folder = {}
+				Folder.Name = "=Public="
+				Folder.Parent = 0
+				Folder.ID = ply.AdvDupe2.FolderID
+				Folder.Public = true
+				table.insert(ply.AdvDupe2.Folders, Folder)
+				local Files2, Folders2 = file.Find("advdupe2/=Public=/*", "data")
+				TFind(ply, "advdupe2/=Public=/*", Files2, Folders2, Folder.ID) 
+			end
+			
+			local Files2, Folders2 = file.Find(AD1.."/*", "data")
+			TFind(ply, AD1.."/*", Files2, Folders2, 0)
 					
-					if(!SinglePlayer() && tobool(GetConVarString("AdvDupe2_AllowPublicFolder")))then
-						ply.AdvDupe2.FolderID=ply.AdvDupe2.FolderID+1
-						local Folder = {}
-						Folder.Name = "=Public="
-						Folder.Parent = 0
-						Folder.ID = ply.AdvDupe2.FolderID
-						Folder.Public = true
-						table.insert(ply.AdvDupe2.Folders, Folder)
-						file.TFind("data/advdupe2/=Public=/*", function(Search, Folders, Files) TFind(ply, Search, Folders, Files, Folder.ID) end)
-					end
-					
-					file.TFind("data/"..AD1.."/*", 
-						function(Search2, Folders2, Files2)
-							TFind(ply, Search2, Folders2, Files2, AD1Folder.ID) 
-						end)
-					
-					TFind(ply, Search, Folders, Files, 0) 
-				end) 
-				
+			TFind(ply, ply:GetAdvDupe2Folder().."/*", Files, Folders, 0)
 				
 		end)
 		
@@ -1544,21 +1541,26 @@ if CLIENT then
 		
 		if not CPanel then return end
 		CPanel:ClearControls()
+		CPanel:GetParent():GetParent():SetBackgroundColor(Color(50,50,50))
+		
 		local Fill = vgui.Create( "DPanel" )
 		CPanel:AddPanel(Fill)
 		Fill:SetTall(CPanel:GetParent():GetParent():GetTall()-45)
-		local List = vgui.Create( "DPanelList", CPanel )
+		Fill:SetBackgroundColor(Color(60,60,60))
+		
+		local List = vgui.Create( "DPanelList", Fill )
 		List:EnableVerticalScrollbar( true )
 		List:Dock( FILL )
 		List:SetSpacing( 2 )
 		List:SetPadding( 2 )
-
+		
 		local FileBrowser = vgui.Create("advdupe2_browser")
 		AdvDupe2.FileBrowser = FileBrowser
 		List:AddItem(FileBrowser)
 		FileBrowser:SetSize(235,450)
 		FileBrowser.Filler = Fill
 		FileBrowser.Initialized = true
+		FileBrowser:SetBackgroundColor(Color(60,60,60))
 		RunConsoleCommand("AdvDupe2_SendFiles")
 		
 		local Check = vgui.Create("DCheckBoxLabel")
@@ -1626,8 +1628,8 @@ if CLIENT then
 		NumSlider.Slider.OnMouseReleased = function(mcode) func(mcode) RunConsoleCommand("AdvDupe2_RemakeGhosts") end
 		local func2 = NumSlider.Wang.OnMouseReleased	//Hacky way to make it work
 		NumSlider.Wang.OnMouseReleased = function(mousecode) func2(mousecode) RunConsoleCommand("AdvDupe2_RemakeGhosts") end
-		local func3 = NumSlider.Wang.TextEntry.OnLoseFocus
-		NumSlider.Wang.TextEntry.OnLoseFocus = function(txtBox) func3(txtBox) RunConsoleCommand("AdvDupe2_RemakeGhosts") end
+		local func3 = NumSlider.Wang.Panel.OnLoseFocus
+		NumSlider.Wang.Panel.OnLoseFocus = function(txtBox) func3(txtBox) RunConsoleCommand("AdvDupe2_RemakeGhosts") end
 		List:AddItem(NumSlider)
 		
 		NumSlider = vgui.Create( "DNumSlider" )

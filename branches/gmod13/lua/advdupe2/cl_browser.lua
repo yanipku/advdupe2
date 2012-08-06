@@ -35,7 +35,8 @@ function AddFilesToBrowser()
 		File.IsFile = true
 		File.Name = Name
 		File.SortName = "B"..string.lower(Name)
-		File.Icon:SetImage("vgui/spawnmenu/file")
+		File.Icon:SetImage("spawnmenu/file")
+		print("OKAY")
 		FilePos = FilePos + 1
 	elseif(ToSearchTotal!=0 && ToSearchTotal>=ToSearchPos)then
 		local Search = ToSearch[ToSearchPos][1].."*"
@@ -661,6 +662,7 @@ end
 
 function PANEL:Init()
 
+print("WORKING")
 	PANEL.Panel = self
 	self.Nodes = {}
 	self.CNodes = {}
@@ -672,21 +674,21 @@ function PANEL:Init()
 	self.ServerBrw.DoClick = self.DoClick
 	self.ServerBrw.DoRightClick = self.DoRightClick
 	if(SinglePlayer())then
-		local Tab = self.TabCtrl:AddSheet( "Local", self.ServerBrw, "gui/silkicons/user", false, false, "Server Files" )
+		local Tab = self.TabCtrl:AddSheet( "Local", self.ServerBrw, "icon16/user.png", false, false, "Server Files" )
 		Tab.Tab.Server = true
 	else
-		local Tab = self.TabCtrl:AddSheet( "Server", self.ServerBrw, "gui/silkicons/world", false, false, "Server Files" )
+		local Tab = self.TabCtrl:AddSheet( "Server", self.ServerBrw, "icon16/world.png", false, false, "Server Files" )
 		Tab.Tab.Server = true
 		
 		self.ClientBrw = vgui.Create("DTree")
 		self.ClientBrw.DoRightClick = self.DoRightClick
-		Tab = self.TabCtrl:AddSheet( "Client", self.ClientBrw, "gui/silkicons/user", false, false, "Client Files" )
+		Tab = self.TabCtrl:AddSheet( "Client", self.ClientBrw, "icon16/user.png", false, false, "Client Files" )
 		Tab.Tab.Server = false
 		self:UpdateClientFiles()
 	end
 	
 	self.Refresh = vgui.Create("DImageButton", self)
-	self.Refresh:SetMaterial( "gui/silkicons/arrow_refresh.vmt" )
+	self.Refresh:SetMaterial( "icon16/arrow_refresh.png" )
 	self.Refresh:SizeToContents()
 	self.Refresh:SetTooltip("Refresh Files")
 	self.Refresh.DoClick = function(button)
@@ -705,7 +707,7 @@ function PANEL:Init()
 	end
 	
 	self.Help = vgui.Create("DImageButton", self)
-	self.Help:SetMaterial( "gui/silkicons/help.vmt" )
+	self.Help:SetMaterial( "icon16/help.png" )
 	self.Help:SizeToContents()
 	self.Help:SetTooltip("Help")
 	self.Help.DoClick = function(btn)
@@ -717,7 +719,7 @@ function PANEL:Init()
 						end
 	
 	self.Save = vgui.Create("DImageButton", self)
-	self.Save:SetMaterial( "VGUI/spawnmenu/save.vmt" )
+	self.Save:SetMaterial( "icon16/page_save.png" )
 	self.Save:SizeToContents()
 	self.Save:SetTooltip("Save File")
 	self.Save.DoClick = 	function()
@@ -731,7 +733,7 @@ function PANEL:Init()
 							end
 	
 	self.NewFolder = vgui.Create("DImageButton", self)
-	self.NewFolder:SetMaterial( "VGUI/spawnmenu/Folder.vmt" )
+	self.NewFolder:SetMaterial( "icon16/folder_add.png" )
 	self.NewFolder:SizeToContents()
 	self.NewFolder:SetTooltip("New Folder")
 	self.NewFolder.DoClick = 	function() 
@@ -788,15 +790,17 @@ function PANEL:AdjustFiller(Menu)
 	if(!Tab.Filler)then return end
 	if(Menu)then
 		if(g_ContextMenu:GetTall()<ScrH()*0.5)then
-			local Tall = g_ActiveControlPanel:GetTall() + 10
+			print(spawnmenu.ActiveControlPanel())
+			local Tall = spawnmenu.ActiveControlPanel():GetTall() + 10
 			local MaxTall = ScrH() * 0.8
 			if ( Tall > MaxTall ) then Tall = MaxTall end
-			Tab.Filler:SetTall(Tall-49)
+			Tab.Filler:SetTall(Tall)
 		else
+		print(spawnmenu.ActiveControlPanel():GetTall())
 			Tab.Filler:SetTall(g_ContextMenu:GetTall()-49)
 		end
 	else
-		Tab.Filler:SetTall(Tab.Panel:GetParent():GetParent():GetParent():GetParent():GetParent():GetTall()-45)
+		//Tab.Filler:SetTall(Tab.Panel:GetParent():GetParent():GetParent():GetParent():GetParent():GetTall()-45)
 	end
 end
 
@@ -876,7 +880,7 @@ function PANEL:AddFile(Name, Parent, New)
 	File.IsFile = true
 	File.Name = Name
 	File.SortName = "B"..string.lower(Name)
-	File.Icon:SetImage("vgui/spawnmenu/file")
+	File.Icon:SetImage("icon16/page.png")
 
 	if(NodeP.ChildNodes)then  
 		NodeP.ChildNodes.Items[#NodeP.ChildNodes.Items].IsFile = true  
@@ -901,7 +905,7 @@ function PANEL:AddFileToClient(Name, Parent, New)
 	File.IsFile = true
 	File.Name = Name
 	File.SortName = "B"..string.lower(Name)
-	File.Icon:SetImage("vgui/spawnmenu/file")
+	File.Icon:SetImage("icon16/page.png")
 
 	if(NodeP.ChildNodes)then  
 		NodeP.ChildNodes.Items[#NodeP.ChildNodes.Items].IsFile = true 
@@ -958,7 +962,7 @@ function PANEL:MoveNode(Name)
 	local NewNode = NodeP:AddNode(Name)
 	NewNode.Name = Name
 	NewNode.SortName = "B"..string.lower(Name)
-	NewNode.Icon:SetImage("vgui/spawnmenu/file")
+	NewNode.Icon:SetImage("icon16/page.png")
 	NewNode.IsFile = true
 	if(NodeP.ChildNodes)then  
 		NodeP.ChildNodes.Items[#NodeP.ChildNodes.Items].IsFile = true 

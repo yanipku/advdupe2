@@ -99,7 +99,7 @@ local function CopyEntTable( Ent, Offset )
 			if(PhysObj:IsMoveable())then Tab.PhysicsObjects[ Bone ].Frozen = true end
 			PhysObj:EnableMotion(false)
 			Tab.PhysicsObjects[ Bone ].Pos = PhysObj:GetPos() - Tab.Pos
-			Tab.PhysicsObjects[ Bone ].Angle = PhysObj:GetAngle()
+			Tab.PhysicsObjects[ Bone ].Angle = PhysObj:GetAngles()
 		end
 	end
 
@@ -113,7 +113,7 @@ local function CopyEntTable( Ent, Offset )
 	end
 	if( IsValid(Ent:GetParent()) ) then
 		if(!Tab.BuildDupeInfo)then Tab.BuildDupeInfo = {} end
-		Tab.PhysicsObjects[ 0 ].Angle = Ent:GetAngles()
+		Tab.PhysicsObjects[ 0 ].Angle = Ent:GetAngless()
 		Tab.BuildDupeInfo.DupeParentID = Ent.Entity:GetParent():EntIndex()
 	end
 
@@ -477,29 +477,29 @@ local function CreateConstraintFromTable(Constraint, EntityList, EntityTable, Pl
 				Bone2 = second:GetPhysicsObjectNum(Bone2Index)
 				Bone2:EnableMotion(false)
 				Bone2:SetPos(second:GetPos() + Constraint.BuildDupeInfo.Bone2Pos)
-				Bone2:SetAngle(Constraint.BuildDupeInfo.Bone2Angle)
+				Bone2:SetAngles(Constraint.BuildDupeInfo.Bone2Angle)
 			end
 		end
 
 		if first ~= nil and Constraint.BuildDupeInfo.Ent1Ang ~= nil then
 			if(!DontEnable)then ReEnableFirst = first:GetPhysicsObject():IsMoveable() end
 			first:GetPhysicsObject():EnableMotion(false)
-			first:SetAngles(Constraint.BuildDupeInfo.Ent1Ang)
+			first:SetAngless(Constraint.BuildDupeInfo.Ent1Ang)
 			if(Constraint.BuildDupeInfo.Bone1) then
 				Bone1Index = Constraint.BuildDupeInfo.Bone1
 				Bone1 = first:GetPhysicsObjectNum(Bone1Index)
 				Bone1:EnableMotion(false)
 				Bone1:SetPos(first:GetPos() + Constraint.BuildDupeInfo.Bone1Pos)
-				Bone1:SetAngle(Constraint.BuildDupeInfo.Bone1Angle)
+				Bone1:SetAngles(Constraint.BuildDupeInfo.Bone1Angle)
 			end
 		end
 
 		if second ~= nil and Constraint.BuildDupeInfo.Ent2Ang ~= nil then
-			second:SetAngles(Constraint.BuildDupeInfo.Ent2Ang)
+			second:SetAngless(Constraint.BuildDupeInfo.Ent2Ang)
 		end
 
 		if second ~= nil and Constraint.BuildDupeInfo.Ent4Ang ~= nil then
-			second:SetAngles(Constraint.BuildDupeInfo.Ent4Ang)
+			second:SetAngless(Constraint.BuildDupeInfo.Ent4Ang)
 		end
 	end
 
@@ -520,19 +520,19 @@ local function CreateConstraintFromTable(Constraint, EntityList, EntityTable, Pl
 	if(EntityTable)then
 		if(first!=nil)then
 			first:SetPos(EntityTable[firstindex].BuildDupeInfo.PosReset)
-			first:SetAngles(EntityTable[firstindex].BuildDupeInfo.AngleReset)
+			first:SetAngless(EntityTable[firstindex].BuildDupeInfo.AngleReset)
 			if(Bone1 && Bone1Index!=0)then
 				Bone1:SetPos(EntityTable[firstindex].BuildDupeInfo.PosReset + EntityTable[firstindex].BuildDupeInfo.PhysicsObjects[Bone1Index].Pos)
-				Bone1:SetAngle(EntityTable[firstindex].PhysicsObjects[Bone1Index].Angle)
+				Bone1:SetAngles(EntityTable[firstindex].PhysicsObjects[Bone1Index].Angle)
 			end
 			if(ReEnableFirst)then first:GetPhysicsObject():EnableMotion(true) end
 		end
 		if(second!=nil)then
 			second:SetPos(EntityTable[secondindex].BuildDupeInfo.PosReset)
-			second:SetAngles(EntityTable[secondindex].BuildDupeInfo.AngleReset)
+			second:SetAngless(EntityTable[secondindex].BuildDupeInfo.AngleReset)
 			if(Bone2 && Bone2Index!=0)then
 				Bone2:SetPos(EntityTable[secondindex].BuildDupeInfo.PosReset + EntityTable[secondindex].BuildDupeInfo.PhysicsObjects[Bone2Index].Pos)
-				Bone2:SetAngle(EntityTable[secondindex].PhysicsObjects[Bone2Index].Angle)
+				Bone2:SetAngles(EntityTable[secondindex].PhysicsObjects[Bone2Index].Angle)
 			end
 			if(ReEnableSecond)then second:GetPhysicsObject():EnableMotion(true) end
 		end
@@ -598,7 +598,7 @@ local function DoGenericPhysics( Entity, data, Player )
 		Phys = Entity:GetPhysicsObjectNum(Bone)
 		if ( IsValid(Phys) ) then	
 			Phys:SetPos( Args.Pos )
-			Phys:SetAngle( Args.Angle )
+			Phys:SetAngles( Args.Angle )
 			Phys:EnableMotion( false ) 	
 			Player:AddFrozenPhysicsObject( Entity, Phys )
 		end	
