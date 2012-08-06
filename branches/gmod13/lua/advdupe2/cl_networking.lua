@@ -13,10 +13,10 @@ include "nullesc.lua"
 AdvDupe2.NetFile = ""
 
 local function CheckFileNameCl(path)
-	if file.Exists(path) then
+	if file.Exists(path, "DATA") then
 		path = string.sub(path, 1, #path-4)
 		for i = 1, AdvDupe2.FileRenameTryLimit do
-			if not file.Exists(path.."_"..i..".txt") then
+			if not file.Exists(path.."_"..i..".txt", "DATA") then
 				return path.."_"..i..".txt"
 			end
 		end
@@ -76,7 +76,7 @@ function AdvDupe2.InitializeUpload(ReadPath, ReadArea, SavePath, SaveArea, Paren
 		ReadPath = "adv_duplicator/"..ReadPath..".txt"
 	end
 	
-	if(!file.Exists(ReadPath))then return end
+	if(!file.Exists(ReadPath, "DATA"))then return end
 	local nwl 
 	local quo 
 	local data = AdvDupe2.Null.esc(file.Read(ReadPath))

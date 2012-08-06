@@ -8,6 +8,8 @@
 	Version: 1.0
 ]]
 
+file.CreateDir("advdupe2")
+
 function _R.Player:SteamIDSafe()
 	return self:SteamID():gsub(":","_")
 end
@@ -34,17 +36,17 @@ function AdvDupe2.WriteFile(ply, name, dupe)
 	end
 	
 	--if a file with this name already exists, we have to come up with a different name
-	if file.Exists(path..".txt") then
+	if file.Exists(path..".txt", "DATA") then
 		for i = 1, AdvDupe2.FileRenameTryLimit do
 			--check if theres already a file with the name we came up with, and retry if there is
 			--otherwise, we can exit the loop and write the file
-			if not file.Exists(path.."_"..i..".txt") then
+			if not file.Exists(path.."_"..i..".txt", "DATA") then
 				path = path.."_"..i
 				break
 			end
 		end
 		--if we still can't find a unique name we give up
-		if file.Exists(path..".txt") then return false end
+		if file.Exists(path..".txt", "DATA") then return false end
 	end
 	
 	--write the file
@@ -65,7 +67,7 @@ function AdvDupe2.ReadFile(ply, name, dirOverride)
 
 	if SinglePlayer() then
 		local path = string.format("%s/%s.txt", dirOverride or AdvDupe2.DataFolder, name)
-		if(!file.Exists(path))then
+		if(!file.Exists(path, "DATA"))then
 			if(ply)then AdvDupe2.Notify(ply, "File does not exist!", NOTIFY_ERROR) end
 			return nil
 		else
@@ -73,7 +75,7 @@ function AdvDupe2.ReadFile(ply, name, dirOverride)
 		end
 	else
 		local path = string.format("%s/%s/%s.txt", dirOverride or AdvDupe2.DataFolder, ply and ply:SteamIDSafe() or "=Public=", name)
-		if(!file.Exists(path))then
+		if(!file.Exists(path, "DATA"))then
 			if(ply)then AdvDupe2.Notify(ply, "File does not exist!", NOTIFY_ERROR) end
 			return nil
 		elseif(file.Size(path)/1024>tonumber(GetConVarString("AdvDupe2_MaxFileSize")))then

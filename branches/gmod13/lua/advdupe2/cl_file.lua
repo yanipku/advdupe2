@@ -25,17 +25,17 @@ function AdvDupe2.WriteFile(name, dupe)
 	local path = string.format("%q/%q", self.DataFolder, name)
 	
 	--if a file with this name already exists, we have to come up with a different name
-	if file.Exists(path..".txt") then
+	if file.Exists(path..".txt", "DATA") then
 		for i = 1, AdvDupe2.FileRenameTryLimit do
 			--check if theres already a file with the name we came up with, and retry if there is
 			--otherwise, we can exit the loop and write the file
-			if not file.Exists(path.."_"..i..".txt") then
+			if not file.Exists(path.."_"..i..".txt", "DATA") then
 				path = path.."_"..i
 				break
 			end
 		end
 		--if we still can't find a unique name we give up
-		if file.Exists(path..".txt") then return false end
+		if file.Exists(path..".txt", "DATA") then return false end
 	end
 	
 	--write the file

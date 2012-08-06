@@ -135,9 +135,9 @@ end
 
 local function CheckFileNameCl(path)
 
-	if file.Exists(path..".txt") then
+	if file.Exists(path..".txt", "DATA") then
 		for i = 1, AdvDupe2.FileRenameTryLimit do
-			if not file.Exists(path.."_"..i..".txt") then
+			if not file.Exists(path.."_"..i..".txt", "DATA") then
 				return path.."_"..i..".txt"
 			end
 		end
@@ -537,7 +537,7 @@ local function RenameFileCl(Node, name)
 
 	if(!FilePath)then AdvDupe2.Notify("Rename limit exceeded, could not rename.", NOTIFY_ERROR) return end
 	file.Write(FilePath, File)
-	if(file.Exists(FilePath))then
+	if(file.Exists(FilePath, "DATA"))then
 		file.Delete(tempFilePath..".txt")
 		local NewName = string.Explode("/", FilePath)
 		NewName = string.sub(NewName[#NewName], 1, -5)

@@ -19,9 +19,9 @@ AdvDupe2.Network.SvStaggerSendRate = 0
 AdvDupe2.Network.ClStaggerSendRate = 0
 
 local function CheckFileNameSv(path)
-	if file.Exists(path..".txt") then
+	if file.Exists(path..".txt", "DATA") then
 		for i = 1, AdvDupe2.FileRenameTryLimit do
-			if not file.Exists(path.."_"..i..".txt") then
+			if not file.Exists(path.."_"..i..".txt", "DATA") then
 				return path.."_"..i..".txt"
 			end
 		end
