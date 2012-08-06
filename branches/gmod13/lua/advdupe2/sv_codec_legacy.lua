@@ -10,7 +10,6 @@
 
 local pairs = pairs
 local type = type
-local tostring = tostring
 local tonumber = tonumber
 local error = error
 local Vector = Vector
@@ -23,12 +22,8 @@ local sub = string.sub
 local gsub = string.gsub
 local find = string.find
 local gmatch = string.gmatch
-local concat = table.concat
-local remove = table.remove
-local sort = table.sort
-local merge = table.Merge
 local match = string.match
-local insert = table.insert
+local concat = table.concat
 
 --[[
 	Name:	GenerateDupeStamp
