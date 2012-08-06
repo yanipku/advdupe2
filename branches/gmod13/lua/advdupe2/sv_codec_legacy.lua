@@ -5,7 +5,7 @@
 
 	Author: emspike
 
-	Version: 1.0
+	Version: 2.0
 ]]
 
 local pairs = pairs
@@ -30,8 +30,6 @@ local merge = table.Merge
 local match = string.match
 local insert = table.insert
 
-AdvDupe2.CodecRevision = REVISION
-
 --[[
 	Name:	GenerateDupeStamp
 	Desc:	Generates an info table.
@@ -48,126 +46,17 @@ function AdvDupe2.GenerateDupeStamp(ply)
 	return stamp
 end
 
-local function makeInfo(tbl)
-	local info = ""
-	for k,v in pairs(tbl) do
-		info = concat{info,k,"\1",v,"\1"}
-	end
-	return info.."\2"
-end
-
 local AD2FF = "AD2F%s\n%s\n%s"
 
-local period = CreateConVar("advdupe2_codec_pipeperiod",1,"Every this many ticks, the codec pipeline processor will run.",FCVAR_ARCHIVE,FCVAR_DONTRECORD)
-local clock = 1
-local pipelines = {}
-local function addPipeline(pipeline)
-	insert(pipelines,pipeline)
-end
-local function pipeproc()
-	if clock % period:GetInt() == 0 then
-		done = {}
-		for idx,pipeline in pairs(pipelines) do
-			local i = pipeline.idx + 1
-			pipeline.idx = i
-			if i == pipeline.cbk then
-				done[#done+1] = idx
-				pipeline.info.size = #pipeline.eax
-				local success, err = pcall(pipeline[i], AD2FF:format(char(pipeline.REVISION), makeInfo(pipeline.info), pipeline.eax), unpack(pipeline.args))
-				if not success then ErrorNoHalt(err) end
-			else
-				local success, err = pcall(pipeline[i], pipeline.eax)
-				if success then
-					pipeline.eax = err
-				else
-					ErrorNoHalt(err)
-					done[#done+1] = idx
-				end
-			end
-		end
-		sort(done)
-		for i = #done, 1, -1 do
-			remove(pipelines,done[i])
-		end
-		clock = 1
-	else
-		clock = clock + 1
-	end
-end
-hook.Add("Tick","AD2CodecPipelineProc",pipeproc)
-
-local encode_types, decode_types, decode_types_v1
+local decode_types_v1, decode_types_v2
 local tables = 0
 local str,pos
 local a,b,c,m,n,w,tblref
 
-local function write(data)
-	local t = encode_types[type(data)]
+local function read_v2()
+	local t = byte(str, pos+1)
 	if t then
-		local data, id_override = t[2](data)
-		return char(id_override or t[1])..data
-	end
-end
-
-encode_types = {
-	table = {2, function(o)
-		local tableid = tostring(o)
-		if tables[tableid] then
-			return tableid.."\1", 10
-		else
-			tables[tableid] = o
-		end
-		
-		local is_array = true
-		m = 0
-		for k in pairs(o) do
-			m = m + 1
-			if k ~= m then
-				is_array = false
-				break
-			end
-		end
-		
-		local u = {tableid,"\1"}
-		if is_array then
-			for g = 3,#o do
-				u[g] = write(o[g])
-			end
-			return concat(u).."\1", 3
-		else
-			local i = 2
-			for k,v in pairs(o) do
-				w = write(v)
-				if w then
-					i = i + 2
-					u[i-1] = write(k)
-					u[i] = w
-				end
-			end
-			return concat(u).."\1"
-		end
-	end},
-	boolean = {4, function(o)
-		return "", o and 5
-	end},
-	number = {6, function(o)
-		return (o==0 and "" or o).."\1"
-	end},
-	string = {7, function(o)
-		return o.."\1"
-	end},
-	Vector = {8, function(o)
-		return format("%g\1%g\1%g\1",o.x,o.y,o.z)
-	end},
-	Angle = {9, function(o)
-		return format("%g\1%g\1%g\1",o.p,o.y,o.r)
-	end}
-}
-
-local function read_v1()
-	local t = byte(str,pos+1)
-	if t then
-		local dt = decode_types_v1[t]
+		local dt = decode_types_v2[t]
 		if dt then
 			pos = pos + 1
 			return dt()
@@ -179,10 +68,127 @@ local function read_v1()
 	end
 end
 
-local function read()
+decode_types_v2 = {
+	[1	] = function()
+		error("expected value, got terminator\n")
+	end,
+	[2	] = function() -- table
+		
+		m = find(str, "\1", pos)
+		if m then
+			w = sub(str, pos+1, m-1)
+			pos = m
+		else
+			error("expected table identifier, got EOF\n")
+		end
+		
+		local t = {}
+		tables[w] = t
+		
+		while true do
+			if byte(str, pos+1) == 1 then
+				pos = pos + 1
+				return t
+			else
+				t[read_v2()] = read_v2()
+			end
+		end
+	end,
+	[3	] = function() -- array
+		
+		m = find(str, "\1", pos)
+		if m then
+			w = sub(str, pos+1, m-1)
+			pos = m
+		else
+			error("expected table identifier, got EOF\n")
+		end
+		
+		local t, i = {}, 1
+		
+		tables[w] = t
+		
+		while true do
+			if byte(str,pos+1) == 1 then
+				pos = pos+1
+				return t
+			else
+				t[i] = read_v2()
+				i = i + 1
+			end
+		end
+	end,
+	[4	] = function() -- false boolean
+		return false
+	end,
+	[5	] = function() -- true boolean
+		return true
+	end,
+	[6	] = function() -- number
+		m = find(str, "\1", pos)
+		if m then
+			a = tonumber(sub(str, pos+1, m-1)) or 0
+			pos = m
+			return a
+		else
+			error("expected number, got EOF\n")
+		end
+	end,
+	[7	] = function() -- string
+		m = find(str,"\1",pos)
+		if m then
+			w = sub(str, pos+1, m-1)
+			pos = m
+			return w
+		else
+			error("expected string, got EOF\n")
+		end
+	end,
+	[8	] = function() -- Vector
+		m,n = find(str,".-\1.-\1.-\1", pos)
+		if m then
+			a,b,c = match(str,"^(.-)\1(.-)\1(.-)\1",pos+1)
+			pos = n
+			return Vector(tonumber(a), tonumber(b), tonumber(c))
+		else
+			error("expected vector, got EOF\n")
+		end
+	end,
+	[9	] = function() -- Angle
+		m,n = find(str, ".-\1.-\1.-\1", pos)
+		if m then
+			a,b,c = match(str, "^(.-)\1(.-)\1(.-)\1",pos+1)
+			pos = n
+			return Angle(tonumber(a), tonumber(b), tonumber(c))
+		else
+			error("expected angle, got EOF\n")
+		end
+	end,
+	[10	] = function() -- Table Reference
+		m = find(str,"\1",pos)
+		if m then
+			w = sub(str,pos+1,m-1)
+			pos = m
+		else
+			error("expected table identifier, got EOF\n")
+		end
+		tblref = tables[w]
+		
+		if tblref then
+			return tblref
+		else
+			error(format("table identifier %s points to nil\n", w))
+		end
+		
+	end
+}
+
+
+
+local function read_v1()
 	local t = byte(str,pos+1)
 	if t then
-		local dt = decode_types[t]
+		local dt = decode_types_v1[t]
 		if dt then
 			pos = pos + 1
 			return dt()
@@ -274,6 +280,13 @@ local function deserialize_v1(data)
 	pos = 0
 	tables = {}
 	return read_v1()
+end
+
+local function deserialize_v2(data)
+	str = data
+	pos = 0
+	tables = {}
+	return read_v2()
 end
 
 local function lzwDecode(encoded)
@@ -515,6 +528,17 @@ end
 
 --decoders for individual versions go here
 local versions = {}
+
+versions[2] = function(encodedDupe)
+	local info, dupestring = getInfo(encodedDupe:sub(7))
+	return deserialize_v2(
+				lzwDecode(
+					huffmanDecode(
+						invEscapeSub(dupestring)
+					)
+				)
+			), info
+end
 
 versions[1] = function(encodedDupe)
 	local info, dupestring = getInfo(encodedDupe:sub(7))
