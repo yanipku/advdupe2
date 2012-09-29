@@ -29,7 +29,7 @@ function AdvDupe2.WriteFile(ply, name, dupe)
 	name = name:gsub("//","/")
 	
 	local path
-	if SinglePlayer() then
+	if game.game.SinglePlayer() then
 		path = string.format("%s/%s", AdvDupe2.DataFolder, name)
 	else
 		path = string.format("%s/%s/%s", AdvDupe2.DataFolder, ply and ply:SteamIDSafe() or "=Public=", name)
@@ -65,7 +65,7 @@ end
 ]]
 function AdvDupe2.ReadFile(ply, name, dirOverride)
 
-	if SinglePlayer() then
+	if game.SinglePlayer() then
 		local path = string.format("%s/%s.txt", dirOverride or AdvDupe2.DataFolder, name)
 		if(!file.Exists(path, "DATA"))then
 			if(ply)then AdvDupe2.Notify(ply, "File does not exist!", NOTIFY_ERROR) end
@@ -97,7 +97,7 @@ function _R.Player:ReadAdvDupe2File(name)
 end
 
 function _R.Player:GetAdvDupe2Folder()
-	if SinglePlayer() then
+	if game.SinglePlayer() then
 		return AdvDupe2.DataFolder
 	else
 		return string.format("%s/%s", AdvDupe2.DataFolder, self:SteamIDSafe())

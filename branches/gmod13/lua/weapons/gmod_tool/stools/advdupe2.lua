@@ -7,12 +7,10 @@
 	
 	Version: 1.0
 ]]
-
-
 TOOL.Category = "Construction"
 TOOL.Name = "#Advanced Duplicator 2"
 cleanup.Register( "AdvDupe2" )
-
+require "controlpanel"
 
 
 --[[
@@ -178,7 +176,7 @@ function TOOL:RightClick( trace )
 	if(!trace or !trace.Hit)then return false end 
 	//If area copy is on and an ent was not right clicked, do an area copy and pick an ent
 	if( self:GetStage()==1 and !IsValid(trace.Entity) )then	
-		if( !SinglePlayer() && (tonumber(ply:GetInfo("advdupe2_area_copy_size"))or 50) > tonumber(GetConVarString("AdvDupe2_MaxAreaCopySize")))then
+		if( !game.SinglePlayer() && (tonumber(ply:GetInfo("advdupe2_area_copy_size"))or 50) > tonumber(GetConVarString("AdvDupe2_MaxAreaCopySize")))then
 			AdvDupe2.Notify(ply,"Area copy size exceeds limit of "..GetConVarString("AdvDupe2_MaxAreaCopySize")..".",NOTIFY_ERROR)
 			return false 
 		end
@@ -282,7 +280,7 @@ function TOOL:RightClick( trace )
 			if(self:GetStage()==0)then
 				AdvDupe2.duplicator.Copy( trace.Entity, ply.AdvDupe2.Entities, ply.AdvDupe2.Constraints, trace.HitPos ) //ply.AdvDupe2.HeadEnt.Pos  )		
 			else	//Area copy is on and an ent was clicked, do an area copy
-				if( !SinglePlayer() && (tonumber(ply:GetInfo("advdupe2_area_copy_size"))or 50) > tonumber(GetConVarString("AdvDupe2_MaxAreaCopySize")))then
+				if( !game.SinglePlayer() && (tonumber(ply:GetInfo("advdupe2_area_copy_size"))or 50) > tonumber(GetConVarString("AdvDupe2_MaxAreaCopySize")))then
 					AdvDupe2.Notify(ply,"Area copy size exceeds limit of "..GetConVarString("AdvDupe2_MaxAreaCopySize")..".",NOTIFY_ERROR)
 					return false 
 				end
@@ -355,7 +353,7 @@ end
 //Update the ghost's postion and angles based on where the player is looking and the offsets
 local function UpdateGhost(ply, toolWep)
 
-	local trace = util.TraceLine(util.GetPlayerTrace(ply, ply:GetCursorAimVector()))
+	local trace = util.TraceLine(util.GetPlayerTrace(ply, ply:GetAimVector()))
 	if (!trace.Hit) then return end
 
 	local GhostEnt = toolWep:GetNetworkedEntity("GhostEntity", nil)
@@ -404,11 +402,9 @@ end
 
 //Add a file to the clients file browser
 local function AddFile(ply,name,parent,new)
-	umsg.Start("AdvDupe2_AddFile",ply)
-		umsg.String(name)
-		umsg.Short(parent)
-		umsg.Bool(new)
-	umsg.End()
+	net.Start("AdvDupe2_AddFile")
+		net.WriteString(name)
+	net.Send(ply)
 end
 
 //Take control of the mouse wheel bind so the player can modify the height of the dupe
@@ -539,23 +535,6 @@ function TOOL:Think()
 				ply.AdvDupe2.CurrentGhost=1
 			end
 			
-		end
-		
-		if(ply.AdvDupe2.SendFiles && CurTime()>= ply.AdvDupe2.LastFile)then
-			if(ply.AdvDupe2.Folders[1])then
-				local Folder = ply.AdvDupe2.Folders[1]
-				AddFolder(ply, Folder.Name, Folder.ID, Folder.Parent, false)
-				table.remove(ply.AdvDupe2.Folders, 1)
-			elseif(ply.AdvDupe2.Files[1])then
-				local File = ply.AdvDupe2.Files[1]
-				AddFile(ply, File.Name, File.Parent, false)
-				table.remove(ply.AdvDupe2.Files, 1)
-			else
-				ply.AdvDupe2.SendFiles = false
-				ply.AdvDupe2.LastFile = 0
-			end
-			
-			ply.AdvDupe2.LastFile = CurTime()+0.02
 		end
 		
 	else
@@ -729,7 +708,7 @@ function MakeContraptionSpawner( ply, Pos, Ang, HeadEnt, EntityTable, Constraint
 
 	if !ply:CheckLimit("gmod_contr_spawners") then return nil end
 	
-	if(!SinglePlayer())then
+	if(!game.SinglePlayer())then
 		if(table.Count(EntityTable)>tonumber(GetConVarString("AdvDupe2_MaxContraptionEntities")))then
 			AdvDupe2.Notify(ply,"Contraption Spawner exceeds the maximum amount of "..GetConVarString("AdvDupe2_MaxContraptionEntities").." entities for a spawner!",NOTIFY_ERROR)
 			return false 
@@ -760,7 +739,7 @@ function MakeContraptionSpawner( ply, Pos, Ang, HeadEnt, EntityTable, Constraint
 	if(!delay)then
 		delay = tonumber(GetConVarString("AdvDupe2_MinContraptionSpawnDelay")) or 0.2
 	else
-		if(!SinglePlayer())then
+		if(!game.SinglePlayer())then
 			min = tonumber(GetConVarString("AdvDupe2_MinContraptionSpawnDelay")) or 0.2
 			if (delay < min) then
 				delay = min
@@ -773,7 +752,7 @@ function MakeContraptionSpawner( ply, Pos, Ang, HeadEnt, EntityTable, Constraint
 	if(!undo_delay)then
 		undo_delay = tonumber(GetConVarString("AdvDupe2_MinContraptionUndoDelay"))
 	else
-		if(!SinglePlayer())then
+		if(!game.SinglePlayer())then
 			min = tonumber(GetConVarString("AdvDupe2_MinContraptionUndoDelay")) or 0.1
 			max = tonumber(GetConVarString("AdvDupe2_MaxContraptionUndoDelay")) or 60
 			if(undo_delay < min) then
@@ -828,7 +807,7 @@ function TOOL:Reload( trace )
 		if(!delay)then
 			delay = tonumber(GetConVarString("AdvDupe2_MinContraptionSpawnDelay")) or 0.2
 		else
-			if(!SinglePlayer())then
+			if(!game.SinglePlayer())then
 				min = tonumber(GetConVarString("AdvDupe2_MinContraptionSpawnDelay")) or 0.2
 				if (delay < min) then
 					delay = min
@@ -841,7 +820,7 @@ function TOOL:Reload( trace )
 		if(!undo_delay)then
 			undo_delay = tonumber(GetConVarString("AdvDupe2_MinContraptionUndoDelay"))
 		else
-			if(!SinglePlayer())then
+			if(!game.SinglePlayer())then
 				min = tonumber(GetConVarString("AdvDupe2_MinContraptionUndoDelay")) or 0.1
 				max = tonumber(GetConVarString("AdvDupe2_MaxContraptionUndoDelay")) or 60
 				if(undo_delay < min) then
@@ -966,7 +945,7 @@ if SERVER then
 				AdvDupe2.Notify(ply,"Public Folder is disabled.",NOTIFY_ERROR)
 				return
 			end
-			newfile = AdvDupe2.DataFolder.."/=Public=/"..path..".txt"
+			newfile = AdvDupe2.DataFolder.."/-Public-/"..path..".txt"
 		else	//AD1 folder in client's folder
 			newfile = "adv_duplicator/"..ply:GetAdvDupe2Folder().."/"..path..".txt"
 		end
@@ -986,7 +965,7 @@ if SERVER then
 			return false 
 		end
 		
-		if(!SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
+		if(!game.SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
 			AdvDupe2.Notify(ply,"Cannot open at the moment. Please Wait...", NOTIFY_ERROR)
 			return
 		end
@@ -998,7 +977,7 @@ if SERVER then
 		if(area==0)then
 			data = ply:ReadAdvDupe2File(path)
 		elseif(area==1)then
-			if(SinglePlayer())then path = "=Public=/"..path end
+			if(game.SinglePlayer())then path = "-Public-/"..path end
 			data = AdvDupe2.ReadFile(nil, path)
 			if(data==nil)then
 				AdvDupe2.Notify(ply, "File does not exist!", NOTIFY_ERROR)
@@ -1021,7 +1000,7 @@ if SERVER then
 				return
 			end
 			
-			if(!SinglePlayer())then
+			if(!game.SinglePlayer())then
 				if(tonumber(GetConVarString("AdvDupe2_MaxConstraints"))!=0 && #dupe["Constraints"]>tonumber(GetConVarString("AdvDupe2_MaxConstraints")))then
 					AdvDupe2.Notify(ply,"Amount of constraints is greater than "..GetConVarString("AdvDupe2_MaxConstraints"),NOTIFY_ERROR)
 					return false
@@ -1122,7 +1101,7 @@ if SERVER then
 		if(!ply.AdvDupe2 || !ply.AdvDupe2.Entities || ply.AdvDupe2.Entities == {})then return end
 		if(args[1]=="" || args[1]==nil || args[3]=="" || args[3]==nil)then return end
 
-		if(!SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
+		if(!game.SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
 			AdvDupe2.Notify(ply,"Cannot save at the moment. Please Wait...", NOTIFY_ERROR)
 			return
 		end
@@ -1140,7 +1119,7 @@ if SERVER then
 				AdvDupe2.Notify(ply,"Public Folder is disabled.",NOTIFY_ERROR)
 				return
 			end
-			if(SinglePlayer())then path = "=Public=/"..path end
+			if(game.SinglePlayer())then path = "-Public-/"..path end
 			public = true
 		elseif(area==2)then
 			AdvDupe2.Notify(ply,"Cannot save into this directory.",NOTIFY_ERROR)
@@ -1170,10 +1149,10 @@ if SERVER then
 				else
 					dir, name = AdvDupe2.WriteFile(nil, path, data)
 				end
-				AddFile(ply,name,args[5],true)
+				AddFile(ply,name)
 			end)
 			
-		if(!SinglePlayer() && tobool(GetConVarString("AdvDupe2_RemoveFilesOnDisconnect")))then
+		if(!game.SinglePlayer() && tobool(GetConVarString("AdvDupe2_RemoveFilesOnDisconnect")))then
 			AdvDupe2.Notify(ply, "Your saved files will be deleted when you disconnect!", NOTIFY_CLEANUP, 10)
 		end
 	end
@@ -1182,7 +1161,7 @@ if SERVER then
 	//Add a new folder to the server
 	local function NewFolder(ply, cmd, args)
 	
-		if(!SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
+		if(!game.SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
 			AdvDupe2.Notify(ply,"Cannot create a new folder at the moment.  Please Wait...", NOTIFY_ERROR)
 			return
 		end
@@ -1203,7 +1182,7 @@ if SERVER then
 				AdvDupe2.Notify(ply,"Public Folder is disabled.",NOTIFY_ERROR)
 				return
 			end
-			path = AdvDupe2.DataFolder.."/=Public=/"..path
+			path = AdvDupe2.DataFolder.."/-Public-/"..path
 		else
 			path = "adv_duplicator/"..ply:SteamIDSafe().."/"..path
 		end
@@ -1237,7 +1216,7 @@ if SERVER then
 	//Delete a file on the server
 	local function DeleteFile(ply, cmd, args)
 	
-		if(!SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
+		if(!game.SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
 			AdvDupe2.Notify(ply,"Cannot delete at the moment.  Please Wait...", NOTIFY_ERROR)
 			return
 		end
@@ -1259,9 +1238,9 @@ if SERVER then
 				return
 			end
 			if(folder)then
-				path = AdvDupe2.DataFolder.."/=Public=/"..path
+				path = AdvDupe2.DataFolder.."/-Public-/"..path
 			else
-				path = AdvDupe2.DataFolder.."/=Public=/"..path..".txt"
+				path = AdvDupe2.DataFolder.."/-Public-/"..path..".txt"
 			end
 		else
 			if(folder)then
@@ -1288,7 +1267,7 @@ if SERVER then
 	
 	local function RenameFile(ply, cmd, args)
 	
-		if(!SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
+		if(!game.SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
 			AdvDupe2.Notify(ply,"Cannot rename at the moment.  Please Wait...", NOTIFY_ERROR)
 			return
 		end
@@ -1336,7 +1315,7 @@ if SERVER then
 	
 	local function MoveFile(ply, cmd, args)
 		
-		if(!SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
+		if(!game.SinglePlayer() && CurTime()-(ply.AdvDupe2.FileMod or 0) < 0)then 
 			AdvDupe2.Notify(ply,"Cannot move file at the moment.  Please Wait...", NOTIFY_ERROR)
 			return
 		end
@@ -1355,7 +1334,7 @@ if SERVER then
 			path1 = AdvDupe2.DataFolder.."/"..path1
 		elseif(area1==1)then
 			AdvDupe2.Notify(ply, "Public folder modification not allowed", NOTIFY_ERROR)
-			//path1 = AdvDupe2.DataFolder.."/".."=Public=/"..path1
+			//path1 = AdvDupe2.DataFolder.."/".."-Public-/"..path1
 			return
 		else
 			path1 = "adv_duplicator/"..path1
@@ -1365,7 +1344,7 @@ if SERVER then
 			path2 = AdvDupe2.DataFolder.."/"..path2
 		elseif(area2==1)then
 			AdvDupe2.Notify(ply, "Public folder modification not allowed", NOTIFY_ERROR)
-			//path2 = AdvDupe2.DataFolder.."/".."=Public=/"..path2
+			//path2 = AdvDupe2.DataFolder.."/".."-Public-/"..path2
 			return
 		else
 			path2 = "adv_duplicator/"..path2
@@ -1400,83 +1379,54 @@ if SERVER then
 	end
 	concommand.Add("AdvDupe2_MoveFile", MoveFile)
 	
-	//TFind files and folders on the server
-	local function TFind(ply, Search, Files, Folders, parent)
 	
-		for k,v in pairs(Files)do
-			local File = {}
-			File.Name = string.Left(v, #v-4)
-			File.IsFolder = 0
-			File.Parent = parent
-			table.insert(ply.AdvDupe2.Files, File)
+	local function PurgeFiles(path)
+		local files, directories = file.Find(path.."*", "DATA")
+		for k,v in pairs(directories)do
+			net.WriteInt(4, 8)
+			net.WriteString(v)
+			PurgeFiles(path..v.."/")
 		end
 		
-		for k,v in pairs(Folders)do
-			ply.AdvDupe2.FolderID=ply.AdvDupe2.FolderID+1
-			local Folder = {}
-			Folder.Name = v
-			Folder.Parent = parent
-			Folder.ID = ply.AdvDupe2.FolderID
-			table.insert(ply.AdvDupe2.Folders, Folder)
-			local Files2, Folders2 = file.Find(string.Left(Search,#Search-1)..v.."/*", "data")
-			TFind(ply, string.Left(Search,#Search-1)..v.."/*", Files2, Folders2, Folder.ID)
+		for k,v in pairs(files)do
+			net.WriteInt(5, 8)
+			net.WriteString(string.sub(v, 1, #v-4))
 		end
-		ply.AdvDupe2.SendFiles = true
+		net.WriteInt(3, 8)
 	end
 	
-	concommand.Add("AdvDupe2_SendFiles", function(ply, cmd, args) 
+	concommand.Add("AdvDupe2_SendFiles",  function(ply)
+	
+		if(ply.AdvDupe2 && !game.SinglePlayer() && CurTime()-(ply.AdvDupe2.NextSend or 0) < 0)then 
+			AdvDupe2.Notify(ply,"Cannot update at the moment.  Please Wait...",NOTIFY_ERROR)
+			return 	
+		end
+		
+		if(!ply.AdvDupe2)then ply.AdvDupe2 = {} end
+		ply.AdvDupe2.NextSend = CurTime() + tonumber(GetConVarString("AdvDupe2_UpdateFilesDelay"))
+		
+		net.Start("AdvDupe2_SendFiles")
 
-			if(ply.AdvDupe2 && !SinglePlayer() && CurTime()-(ply.AdvDupe2.NextSend or 0) < 0)then 
-				AdvDupe2.Notify(ply,"Cannot update at the moment.  Please Wait...",NOTIFY_ERROR)
-				return 	
-			end
-			
-			if(!ply.AdvDupe2)then ply.AdvDupe2 = {} end
-			ply.AdvDupe2.SendFiles = false
-			ply.AdvDupe2.LastFile = 0
-			ply.AdvDupe2.FolderID = 0
-			ply.AdvDupe2.Folders = {}
-			ply.AdvDupe2.Files = {}
-			if(tonumber(args[1])==0)then
-				umsg.Start("AdvDupe2_ClearBrowser", ply)
-				umsg.End()
-				return
-			end 
+			net.WriteInt(0, 8)
+			PurgeFiles(ply:GetAdvDupe2Folder().."/")
 
-			local Files, Folders = file.Find(ply:GetAdvDupe2Folder().."/*", "data")
-			
-			if(!ply.AdvDupe2)then ply.AdvDupe2 = {} end
-			ply.AdvDupe2.NextSend = CurTime() + tonumber(GetConVarString("AdvDupe2_UpdateFilesDelay"))
-					
-			local AD1 = "adv_duplicator"
-			if(!SinglePlayer())then
-				AD1 = AD1.."/"..ply:SteamIDSafe()
-			end
-			ply.AdvDupe2.FolderID=ply.AdvDupe2.FolderID+1
-			local AD1Folder = {}
-			AD1Folder.Name = "=Adv Duplicator="
-			AD1Folder.Parent = 0
-			AD1Folder.ID = ply.AdvDupe2.FolderID
-			table.insert(ply.AdvDupe2.Folders, AD1Folder)
-			
-			if(!SinglePlayer() && tobool(GetConVarString("AdvDupe2_AllowPublicFolder")))then
-				ply.AdvDupe2.FolderID=ply.AdvDupe2.FolderID+1
-				local Folder = {}
-				Folder.Name = "=Public="
-				Folder.Parent = 0
-				Folder.ID = ply.AdvDupe2.FolderID
-				Folder.Public = true
-				table.insert(ply.AdvDupe2.Folders, Folder)
-				local Files2, Folders2 = file.Find("advdupe2/=Public=/*", "data")
-				TFind(ply, "advdupe2/=Public=/*", Files2, Folders2, Folder.ID) 
+			if(!game.SinglePlayer() && tobool(GetConVarString("AdvDupe2_AllowPublicFolder")))then
+				net.WriteInt(1, 8)
+				if(file.IsDir("advdupe2/-Public-", "DATA"))then
+					PurgeFiles("advdupe2/-Public-/")
+				end
 			end
 			
-			local Files2, Folders2 = file.Find(AD1.."/*", "data")
-			TFind(ply, AD1.."/*", Files2, Folders2, 0)
-					
-			TFind(ply, ply:GetAdvDupe2Folder().."/*", Files, Folders, 0)
-				
-		end)
+			local AD1 = "adv_duplicator/"
+			if(!game.SinglePlayer())then
+				AD1 = AD1..ply:SteamIDSafe().."/"
+			end
+	
+			net.WriteInt(2, 8)
+			PurgeFiles(AD1)
+	
+		net.Send(ply)
+	end)
 		
 	--[[=====================]]--
 	--[[END OF FILE FUNCTIONS]]--
@@ -1537,57 +1487,47 @@ if CLIENT then
 	CreateClientConVar("advdupe2_paste_protectoveride", 0, false, true)
 	
 	local function BuildCPanel()
-		local CPanel = GetControlPanel("advdupe2")
+		local CPanel = controlpanel.Get("advdupe2")
 		
 		if not CPanel then return end
 		CPanel:ClearControls()
-		CPanel:GetParent():GetParent():SetBackgroundColor(Color(50,50,50))
 		
-		local Fill = vgui.Create( "DPanel" )
-		CPanel:AddPanel(Fill)
-		Fill:SetTall(CPanel:GetParent():GetParent():GetTall()-45)
-		Fill:SetBackgroundColor(Color(60,60,60))
-		
-		local List = vgui.Create( "DPanelList", Fill )
-		List:EnableVerticalScrollbar( true )
-		List:Dock( FILL )
-		List:SetSpacing( 2 )
-		List:SetPadding( 2 )
 		
 		local FileBrowser = vgui.Create("advdupe2_browser")
-		AdvDupe2.FileBrowser = FileBrowser
-		List:AddItem(FileBrowser)
-		FileBrowser:SetSize(235,450)
-		FileBrowser.Filler = Fill
-		FileBrowser.Initialized = true
-		FileBrowser:SetBackgroundColor(Color(60,60,60))
+		CPanel:AddItem(FileBrowser)
+		FileBrowser:SetSize(CPanel:GetWide(),405)
 		RunConsoleCommand("AdvDupe2_SendFiles")
 		
 		local Check = vgui.Create("DCheckBoxLabel")
+		
 		Check:SetText( "Paste at original position" )
+		Check:SetTextColor(Color(0,0,0,255))
 		Check:SetConVar( "advdupe2_original_origin" ) 
 		Check:SetValue( 0 )
 		Check:SetToolTip("Paste at the coords originally copied")
-		List:AddItem(Check)
+		CPanel:AddItem(Check)
 		
 		Check = vgui.Create("DCheckBoxLabel")
 		Check:SetText( "Paste with constraints" )
+		Check:SetTextColor(Color(0,0,0,255))
 		Check:SetConVar( "advdupe2_paste_constraints" ) 
 		Check:SetValue( 1 )
 		Check:SetToolTip("Paste with or without constraints")
-		List:AddItem(Check)
+		CPanel:AddItem(Check)
 		
 		Check = vgui.Create("DCheckBoxLabel")
 		Check:SetText( "Paste with parenting" )
+		Check:SetTextColor(Color(0,0,0,255))
 		Check:SetConVar( "advdupe2_paste_parents" ) 
 		Check:SetValue( 1 )
 		Check:SetToolTip("Paste with or without parenting")
-		List:AddItem(Check)
+		CPanel:AddItem(Check)
 		
 		local Check_1 = vgui.Create("DCheckBoxLabel")
 		local Check_2 = vgui.Create("DCheckBoxLabel")
 		
 		Check_1:SetText( "Unfreeze all after paste" )
+		Check_1:SetTextColor(Color(0,0,0,255))
 		Check_1:SetConVar( "advdupe2_paste_unfreeze" ) 
 		Check_1:SetValue( 0 )
 		Check_1.OnChange = 	function() 
@@ -1596,9 +1536,10 @@ if CLIENT then
 								end
 							end
 		Check_1:SetToolTip("Unfreeze all props after pasting")
-		List:AddItem(Check_1)
+		CPanel:AddItem(Check_1)
 		
 		Check_2:SetText( "Preserve frozen state after paste" )
+		Check_2:SetTextColor(Color(0,0,0,255))
 		Check_2:SetConVar( "advdupe2_preserve_freeze" ) 
 		Check_2:SetValue( 0 )
 		Check_2.OnChange = 	function() 
@@ -1607,17 +1548,19 @@ if CLIENT then
 								end
 							end
 		Check_2:SetToolTip("Makes props have the same frozen state as when they were copied")
-		List:AddItem(Check_2)
+		CPanel:AddItem(Check_2)
 		
 		Check = vgui.Create("DCheckBoxLabel")
 		Check:SetText( "Area copy constrained props outside of box" )
+		Check:SetTextColor(Color(0,0,0,255))
 		Check:SetConVar( "advdupe2_copy_outside" ) 
 		Check:SetValue( 0 )
 		Check:SetToolTip("Copy entities outside of the area copy that are constrained to entities insde")
-		List:AddItem(Check)
+		CPanel:AddItem(Check)
 
 		local NumSlider = vgui.Create( "DNumSlider" )
-		NumSlider:SetText( "Percent of ghost to create" )
+		NumSlider:SetText( "Ghost Percentage:" )
+		NumSlider.Label:SetTextColor(Color(0,0,0,255))
 		NumSlider:SetMin( 0 )
 		NumSlider:SetMax( 100 )
 		NumSlider:SetDecimals( 0 )
@@ -1630,19 +1573,20 @@ if CLIENT then
 		NumSlider.Wang.OnMouseReleased = function(mousecode) func2(mousecode) RunConsoleCommand("AdvDupe2_RemakeGhosts") end
 		local func3 = NumSlider.Wang.Panel.OnLoseFocus
 		NumSlider.Wang.Panel.OnLoseFocus = function(txtBox) func3(txtBox) RunConsoleCommand("AdvDupe2_RemakeGhosts") end
-		List:AddItem(NumSlider)
+		CPanel:AddItem(NumSlider)
 		
 		NumSlider = vgui.Create( "DNumSlider" )
-		NumSlider:SetText( "Area Copy Size" )
+		NumSlider:SetText( "Area Copy Size:" )
+		NumSlider.Label:SetTextColor(Color(0,0,0,255))
 		NumSlider:SetMin( 0 )
 		NumSlider:SetMax( 2500 )
 		NumSlider:SetDecimals( 0 )
 		NumSlider:SetConVar( "advdupe2_area_copy_size" )
 		NumSlider:SetToolTip("Change the size of the area copy")
-		List:AddItem(NumSlider)
+		CPanel:AddItem(NumSlider)
 		
 		local Category1 = vgui.Create("DCollapsibleCategory")
-		List:AddItem(Category1)
+		CPanel:AddItem(Category1)
 		Category1:SetLabel("Offsets")
 		Category1:SetExpanded(0)
 		
@@ -1657,6 +1601,7 @@ if CLIENT then
 					
 			NumSlider = vgui.Create( "DNumSlider" )
 			NumSlider:SetText( "Height Offset" )
+			NumSlider.Label:SetTextColor(Color(0,0,0,255))
 			NumSlider:SetMin( 0 )
 			NumSlider:SetMax( 2500 ) 
 			NumSlider:SetDecimals( 0 ) 
@@ -1666,6 +1611,7 @@ if CLIENT then
 			
 			Check = vgui.Create("DCheckBoxLabel")
 			Check:SetText( "Use World Angles" )
+			Check:SetTextColor(Color(0,0,0,255))
 			Check:SetConVar( "advdupe2_offset_world" ) 
 			Check:SetValue( 0 )
 			Check:SetToolTip("Use world angles for the offset instead of the main entity")
@@ -1673,6 +1619,7 @@ if CLIENT then
 			
 			NumSlider = vgui.Create( "DNumSlider" )
 			NumSlider:SetText( "Pitch Offset" )
+			NumSlider.Label:SetTextColor(Color(0,0,0,255))
 			NumSlider:SetMin( -180 ) 
 			NumSlider:SetMax( 180 ) 
 			NumSlider:SetDecimals( 0 ) 
@@ -1681,6 +1628,7 @@ if CLIENT then
 					
 			NumSlider = vgui.Create( "DNumSlider" )
 			NumSlider:SetText( "Yaw Offset" )
+			NumSlider.Label:SetTextColor(Color(0,0,0,255))
 			NumSlider:SetMin( -180 )
 			NumSlider:SetMax( 180 )
 			NumSlider:SetDecimals( 0 )
@@ -1689,6 +1637,7 @@ if CLIENT then
 					
 			NumSlider = vgui.Create( "DNumSlider" )
 			NumSlider:SetText( "Roll Offset" )
+			NumSlider.Label:SetTextColor(Color(0,0,0,255))
 			NumSlider:SetMin( -180 )
 			NumSlider:SetMax( 180 )
 			NumSlider:SetDecimals( 0 )
@@ -1698,7 +1647,7 @@ if CLIENT then
 			
 		--[[Dupe Information]]--
 			local Category2 = vgui.Create("DCollapsibleCategory")
-			List:AddItem(Category2)
+			CPanel:AddItem(Category2)
 			Category2:SetLabel("Dupe Information")
 			Category2:SetExpanded(0)
 					
@@ -1713,47 +1662,55 @@ if CLIENT then
 			
 			local lbl = vgui.Create( "DLabel" )
 			lbl:SetText("File: ")
+			lbl:SetTextColor(Color(0,0,0,255))
 			CategoryContent2:AddItem(lbl)
 			AdvDupe2.Info.File = lbl
 			
 			lbl = vgui.Create( "DLabel" )
 			lbl:SetText("Creator:")
+			lbl:SetTextColor(Color(0,0,0,255))
 			CategoryContent2:AddItem(lbl)
 			AdvDupe2.Info.Creator = lbl
 			
 			lbl = vgui.Create( "DLabel" )
 			lbl:SetText("Date:")
+			lbl:SetTextColor(Color(0,0,0,255))
 			CategoryContent2:AddItem(lbl)
 			AdvDupe2.Info.Date = lbl
 			
 			lbl = vgui.Create( "DLabel" )
 			lbl:SetText("Time:")
+			lbl:SetTextColor(Color(0,0,0,255))
 			CategoryContent2:AddItem(lbl)
 			AdvDupe2.Info.Time = lbl
 			
 			lbl = vgui.Create( "DLabel" )
 			lbl:SetText("Size:")
+			lbl:SetTextColor(Color(0,0,0,255))
 			CategoryContent2:AddItem(lbl)
 			AdvDupe2.Info.Size = lbl
 			
 			lbl = vgui.Create( "DLabel" )
 			lbl:SetText("Desc:")
+			lbl:SetTextColor(Color(0,0,0,255))
 			CategoryContent2:AddItem(lbl)
 			AdvDupe2.Info.Desc = lbl
 			
 			lbl = vgui.Create( "DLabel" )
 			lbl:SetText("Entities:")
+			lbl:SetTextColor(Color(0,0,0,255))
 			CategoryContent2:AddItem(lbl)
 			AdvDupe2.Info.Entities = lbl
 			
 			lbl = vgui.Create( "DLabel" )
 			lbl:SetText("Constraints:")
+			lbl:SetTextColor(Color(0,0,0,255))
 			CategoryContent2:AddItem(lbl)
 			AdvDupe2.Info.Constraints = lbl
 		
 		--[[Contraption Spawner]]--
 			local Category3 = vgui.Create("DCollapsibleCategory")
-			List:AddItem(Category3)
+			CPanel:AddItem(Category3)
 			Category3:SetLabel("Contraption Spawner")
 			Category3:SetExpanded(0)
 			
@@ -1773,7 +1730,8 @@ if CLIENT then
 				
 			NumSlider = vgui.Create( "DNumSlider" )
 			NumSlider:SetText( "Spawn Delay" )
-			if(SinglePlayer())then
+			NumSlider.Label:SetTextColor(Color(0,0,0,255))
+			if(game.SinglePlayer())then
 				NumSlider:SetMin( 0 )
 			else
 				local min = tonumber(GetConVarString("AdvDupe2_MinContraptionSpawnDelay")) or 0.2
@@ -1789,7 +1747,8 @@ if CLIENT then
 					
 			NumSlider = vgui.Create( "DNumSlider" )
 			NumSlider:SetText( "Undo Delay" )
-			if(SinglePlayer())then 
+			NumSlider.Label:SetTextColor(Color(0,0,0,255))
+			if(game.SinglePlayer())then 
 				NumSlider:SetMin( 0 )
 				NumSlider:SetMax( 60 )
 			else
@@ -1809,25 +1768,28 @@ if CLIENT then
 					
 			Check = vgui.Create("DCheckBoxLabel")
 			Check:SetText( "Disable gravity for all spawned props" )
+			Check:SetTextColor(Color(0,0,0,255))
 			Check:SetConVar( "advdupe2_contr_spawner_disgrav" ) 
 			Check:SetValue( 0 )
 			CategoryContent3:AddItem(Check)
 					
 			Check = vgui.Create("DCheckBoxLabel")
 			Check:SetText( "Disable drag for all spawned props" )
+			Check:SetTextColor(Color(0,0,0,255))
 			Check:SetConVar( "advdupe2_contr_spawner_disdrag" ) 
 			Check:SetValue( 0 )
 			CategoryContent3:AddItem(Check)
 					
 			Check = vgui.Create("DCheckBoxLabel")
 			Check:SetText( "Add spawner's velocity to contraption" )
+			Check:SetTextColor(Color(0,0,0,255))
 			Check:SetConVar( "advdupe2_contr_spawner_addvel" ) 
 			Check:SetValue( 1 )
 			CategoryContent3:AddItem(Check)
 			
 		--[[Experimental Section]]--
 			local Category4 = vgui.Create("DCollapsibleCategory")
-			List:AddItem(Category4)
+			CPanel:AddItem(Category4)
 			Category4:SetLabel("Experimental Section")
 			Category4:SetExpanded(0)
 			
@@ -1840,12 +1802,14 @@ if CLIENT then
 			
 			Check = vgui.Create("DCheckBoxLabel")
 			Check:SetText( "Disable parented props physics interaction" )
+			Check:SetTextColor(Color(0,0,0,255))
 			Check:SetConVar( "advdupe2_paste_disparents" ) 
 			Check:SetValue( 0 )
 			CategoryContent4:AddItem(Check)
 			
 			Check = vgui.Create("DCheckBoxLabel")
 			Check:SetText( "Disable Dupe Spawn Protection" )
+			Check:SetTextColor(Color(0,0,0,255))
 			Check:SetConVar( "advdupe2_paste_protectoveride" ) 
 			Check:SetValue( 0 )
 			CategoryContent4:AddItem(Check)
@@ -1863,8 +1827,8 @@ if CLIENT then
 	local ToColor = {r=25, g=100, b=40, a=255}
 	local CurColor = {r=25, g=100, b=40, a=255}
 	local rate
-	surface.CreateFont ("Arial", 40, 1000, true, false, "AD2Font") ---Remember to use gm_clearfonts
-	surface.CreateFont ("Arial", 24, 1000, true, false, "AD2TitleFont")
+	surface.CreateFont ("AD2Font", {font="Arial", size=40, weight=1000}) ---Remember to use gm_clearfonts
+	surface.CreateFont ("AD2TitleFont", {font="Arial", size=24, weight=1000})
 	//local spacing = {"   ","     ","       ","         ","           ","             "}
 	function TOOL:RenderToolScreen()
 		if(!AdvDupe2)then return true end

@@ -17,6 +17,7 @@ AddCSLuaFile "autorun/client/advdupe2_cl_init.lua"
 AddCSLuaFile "advdupe2/cl_browser.lua"
 AddCSLuaFile "advdupe2/cl_networking.lua"
 AddCSLuaFile "advdupe2/cl_file.lua"
+AddCSLuaFile "advdupe2/file_browser.lua"
 
 resource.AddFile("materials/gui/ad2logo.tga")
 resource.AddFile("materials/gui/silkicons/help.vtf")
@@ -99,6 +100,8 @@ cvars.AddChangeCallback("AdvDupe2_SpawnRate",
 	
 hook.Add("Initialize", "AdvDupe2_CheckServerSettings",
 	function()
+		util.AddNetworkString("AdvDupe2_AddFile")
+		util.AddNetworkString("AdvDupe2_SendFiles")
 		AdvDupe2.SpawnRate = tonumber(GetConVarString("AdvDupe2_SpawnRate"))
 		if(!AdvDupe2.SpawnRate || AdvDupe2.SpawnRate<=0 || AdvDupe2.SpawnRate>1)then
 			AdvDupe2.SpawnRate = 1
