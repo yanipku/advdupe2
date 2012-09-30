@@ -29,7 +29,7 @@ function AdvDupe2.WriteFile(ply, name, dupe)
 	name = name:gsub("//","/")
 	
 	local path
-	if game.game.SinglePlayer() then
+	if game.SinglePlayer() then
 		path = string.format("%s/%s", AdvDupe2.DataFolder, name)
 	else
 		path = string.format("%s/%s/%s", AdvDupe2.DataFolder, ply and ply:SteamIDSafe() or "=Public=", name)

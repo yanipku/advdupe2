@@ -89,7 +89,7 @@ end
 local len
 local tables,tablesLookup
 
-enc[3] = function(obj) --table
+enc[TYPE_TABLE] = function(obj) --table
 	tables = tables + 1
 	if not tablesLookup[obj] then
 		tablesLookup[obj] = tables
@@ -113,26 +113,26 @@ enc[3] = function(obj) --table
 	end
 	buff:WriteByte(0)
 end
-enc[4] = function(obj) --boolean
+enc[TYPE_BOOL] = function(obj) --boolean
 	buff:WriteByte(obj and 253 or 252)
 end
-enc[2] = function(obj) --number
+enc[TYPE_NUMBER] = function(obj) --number
 	buff:WriteByte(251)
 	buff:WriteDouble(obj)
 end
-enc[8] = function(obj) --vector
+enc[TYPE_VECTOR] = function(obj) --vector
 	buff:WriteByte(250)
 	buff:WriteDouble(obj.x)
 	buff:WriteDouble(obj.y)
 	buff:WriteDouble(obj.z)
 end
-enc[9] = function(obj) --angle
+enc[TYPE_ANGLE] = function(obj) --angle
 	buff:WriteByte(249)
 	buff:WriteDouble(obj.p)
 	buff:WriteDouble(obj.y)
 	buff:WriteDouble(obj.r)
 end
-enc[1] = function(obj) --string
+enc[TYPE_STRING] = function(obj) --string
 	
 	len = #obj
 	
@@ -272,7 +272,7 @@ local function serialize(tbl)
 	
 	buff:Close()
 	buff = file.Open("ad2temp.txt","rb","DATA")
-	local ret = buff:ReadString(buff:Size())
+	local ret = buff:Read(buff:Size())
 	buff:Close()
 	return ret
 end
