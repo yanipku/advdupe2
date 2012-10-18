@@ -1,3 +1,4 @@
  * [Controls Controls]
  * [ToolSettingsExplanation Tool Settings Explanation]
  * [ServerSettings Server Settings]
+ * [FAQ FAQ]
