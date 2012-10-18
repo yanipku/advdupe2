@@ -1,22 +1,22 @@
- * *AdvDupe2_SpawnRate* - (Default - 1) Change the percentage rate for pasting. I.E. 1 = 100% speed, .25 = 25% speed
- * *AdvDupe2_MaxFileSize* - (Default - 200) kbs in file sized that can be opened.
- * *AdvDupe2_MaxEntities* - (Default - 0) How many entities can be pasted. 0 to use sbox_maxprops.
- * *AdvDupe2_MaxConstraints* - (Default - 0) How many constraints can be pasted. 0 to use unlimited.
- * *AdvDupe2_AllowUploading* - (Default - true) Enable or disable file uploading.
- * *AdvDupe2_AllowDownloading* - (Default - true) Enable or disable file downloading.
- * *AdvDupe2_AllowPublicFolder* - (Default - true) Enable or disable access to the public folder.
- * *AdvDupe2_MaxContraptionEntities* - (Default - 10) Amount of entities that can be in a contraption spawner.
- * *AdvDupe2_MaxContraptionConstraints* - (Default - 15) Amount of constraints that can be in a contraption spawner.
- * *AdvDupe2_MinContraptionSpawnDelay* - (Default - 0.2) The minimum delay between how fast the contraption spawner can spawn something.
- * *AdvDupe2_MaxContraptionSpawnDelay* - (Default - 120) The maximum delay between how fast the contraption spawner can spawn something.
- * *AdvDupe2_MinContraptionSpawnUndoDelay* - (Default - 0.1) The minimum delay of how fast the contraption spawner will auto undo.
- * *AdvDupe2_MaxContraptionSpawnUndoDelay* - (Default - 60) The Maximum delay of how fast the contraption spawner will auto undo.
- * *AdvDupe2_MaxAreaCopySize* - (Default - 2500) Max size of an area copy.
- * *AdvDupe2_RemoveFilesOnDisconnect* - (Default - false) Remove all of a player's files when they disconnect form the server.
- * *AdvDupe2_FileModificationDelay* - (Default - 5) The delay in seconds between file modifications(Opening, deleting, moving, renaming, saving).
- * *AdvDupe2_UpdateFilesDelay* - (Default - 10) The delay in seconds for how quickly a player can re-update their files.
- * *AdvDupe2_AllowNPCPasting* - (Default - false) Enable or disable spawning of npcs.
- * *AdvDupe2_MaxDownloadBytes* - (Default - 200) Amount of bytes to send per data chunk when a player is downloading.
- * *AdvDupe2_MaxUploadBytes* - (Default - 180) Amount of bytes to recieve per data chunk when a player is uploading.
- * *AdvDupe2_ServerSendRate* - (Default - 0.15) How quickly to send the data chunks to the player.
- * *AdvDupe2_ClientSendRate* - (Default - 0.15) How quickly to receive the data chunks from the player.
+ * *`AdvDupe2_SpawnRate`* - (Default - 1) Change the percentage rate for pasting. I.E. 1 = 100% speed, .25 = 25% speed
+ * *`AdvDupe2_MaxFileSize`* - (Default - 200) kbs in file sized that can be opened.
+ * *`AdvDupe2_MaxEntities`* - (Default - 0) How many entities can be pasted. 0 to use sbox_maxprops.
+ * *`AdvDupe2_MaxConstraints`* - (Default - 0) How many constraints can be pasted. 0 to use unlimited.
+ * *`AdvDupe2_AllowUploading`* - (Default - true) Enable or disable file uploading.
+ * *`AdvDupe2_AllowDownloading`* - (Default - true) Enable or disable file downloading.
+ * *`AdvDupe2_AllowPublicFolder`* - (Default - true) Enable or disable access to the public folder.
+ * *`AdvDupe2_MaxContraptionEntities`* - (Default - 10) Amount of entities that can be in a contraption spawner.
+ * *`AdvDupe2_MaxContraptionConstraints`* - (Default - 15) Amount of constraints that can be in a contraption spawner.
+ * *`AdvDupe2_MinContraptionSpawnDelay`* - (Default - 0.2) The minimum delay between how fast the contraption spawner can spawn something.
+ * *`AdvDupe2_MaxContraptionSpawnDelay`* - (Default - 120) The maximum delay between how fast the contraption spawner can spawn something.
+ * *`AdvDupe2_MinContraptionSpawnUndoDelay`* - (Default - 0.1) The minimum delay of how fast the contraption spawner will auto undo.
+ * *`AdvDupe2_MaxContraptionSpawnUndoDelay`* - (Default - 60) The Maximum delay of how fast the contraption spawner will auto undo.
+ * *`AdvDupe2_MaxAreaCopySize`* - (Default - 2500) Max size of an area copy.
+ * *`AdvDupe2_RemoveFilesOnDisconnect`* - (Default - false) Remove all of a player's files when they disconnect form the server.
+ * *`AdvDupe2_FileModificationDelay`* - (Default - 5) The delay in seconds between file modifications(Opening, deleting, moving, renaming, saving).
+ * *`AdvDupe2_UpdateFilesDelay`* - (Default - 10) The delay in seconds for how quickly a player can re-update their files.
+ * *`AdvDupe2_AllowNPCPasting`* - (Default - false) Enable or disable spawning of npcs.
+ * *`AdvDupe2_MaxDownloadBytes`* - (Default - 200) Amount of bytes to send per data chunk when a player is downloading.
+ * *`AdvDupe2_MaxUploadBytes`* - (Default - 180) Amount of bytes to recieve per data chunk when a player is uploading.
+ * *`AdvDupe2_ServerSendRate`* - (Default - 0.15) How quickly to send the data chunks to the player.
+ * *`AdvDupe2_ClientSendRate`* - (Default - 0.15) How quickly to receive the data chunks from the player.
