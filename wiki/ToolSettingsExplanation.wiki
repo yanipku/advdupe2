@@ -1,3 +1,4 @@
+#summary Gives more detail about each setting that can be applied to the tool in the tool menu.
 #sidebar TableOfContents
 
  * *Paste at original position* - Pastes the duplication at the position it was copied.
