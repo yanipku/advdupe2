@@ -1,3 +1,4 @@
+#summary Gives detail about each server setting of the tool and their default values.
 #sidebar TableOfContents
 
  * *`AdvDupe2_SpawnRate`* - (Default - 1) Change the percentage rate for pasting. I.E. 1 = 100% speed, .25 = 25% speed
