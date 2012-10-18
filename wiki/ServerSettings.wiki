@@ -1,3 +1,5 @@
+#sidebar TableOfContents
+
  * *`AdvDupe2_SpawnRate`* - (Default - 1) Change the percentage rate for pasting. I.E. 1 = 100% speed, .25 = 25% speed
  * *`AdvDupe2_MaxFileSize`* - (Default - 200) kbs in file sized that can be opened.
  * *`AdvDupe2_MaxEntities`* - (Default - 0) How many entities can be pasted. 0 to use sbox_maxprops.
