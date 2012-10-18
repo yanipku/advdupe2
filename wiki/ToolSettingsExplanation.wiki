@@ -1,3 +1,5 @@
+#sidebar TableOfContents
+
  * *Paste at original position* - Pastes the duplication at the position it was copied.
  * *Paste with constraints* - Check to paste with constraints, uncheck to paste without constraints.
  * *Paste with parenting* - Check to paste with parenting, uncheck to paste without parenting.
