@@ -1,4 +1,5 @@
 #sidebar TableOfContents
+ * [Controls HOWTO articles]
 
 These instructions refer to default key bindings.
 Reload(Default *R*), Sprint(Default *Shift*), Walk(Default *Alt*), Use(Default *E*).
