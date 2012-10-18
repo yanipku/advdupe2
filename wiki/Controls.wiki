@@ -3,7 +3,7 @@
 
 These instructions refer to default key bindings.
 Reload(Default *R*), Sprint(Default *Shift*), Walk(Default *Alt*), Use(Default *E*).
-
+----
  * *Left Click* - Paste the duplication that is copied.
 
  * *Right Click* - Copy an entity and all constrained entities and their constraints.
