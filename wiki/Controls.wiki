@@ -1,4 +1,4 @@
-#summary What's this look like.
+#summary This page shows what controls to use for certain functionality of the tool.
 #sidebar TableOfContents
 
 These instructions refer to default key bindings.
