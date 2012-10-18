@@ -2,3 +2,4 @@
  * [ToolSettingsExplanation Tool Settings Explanation]
  * [ServerSettings Server Settings]
  * [FAQ FAQ]
+ * [Download Download Link]
