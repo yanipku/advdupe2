@@ -1,3 +1,4 @@
+#summary What's this look like.
 #sidebar TableOfContents
 
 These instructions refer to default key bindings.
