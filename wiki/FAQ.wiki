@@ -1,16 +1,16 @@
 #summary Frequently Asked Questions.
 
-* *Q*: Why does smartsnap or other clientside type drawings not appear on the props after I pasted them.
-* *A*: It's a GMod bug, I made a little work around for it in the mean time, enable the second option in the experimental section.
+ * *Q*: Why does smartsnap or other clientside type drawings not appear on the props after I pasted them.
+  * *A*: It's a GMod bug, I made a little work around for it in the mean time, enable the second option in the experimental section.
 
-* *Q*: Will this fix broken duplications from Advanced Duplicator 1?
-* *A*: No. Not possible.
+ * *Q*: Will this fix broken duplications from Advanced Duplicator 1?
+  * *A*: No. Not possible.
 
-* *Q*: How do I save files?
-* *A*: Right Click a folder. In the menu that drops down, enter the file name and description, then click the save button or press enter.
+ * *Q*: How do I save files?
+  * *A*: Right Click a folder. In the menu that drops down, enter the file name and description, then click the save button or press enter.
 
-* *Q*: How do I open files?
-* *A*: Right click on the file and click open.
+ * *Q*: How do I open files?
+  * *A*: Right click on the file and click open.
 
-* *Q*: How do I add a new folder?
-* *A*: Right click the folder you want to add a folder to and click New Folder. In the menu that drops down, enter the folder name and click the add folder button.
+ * *Q*: How do I add a new folder?
+  * *A*: Right click the folder you want to add a folder to and click New Folder. In the menu that drops down, enter the folder name and click the add folder button.
