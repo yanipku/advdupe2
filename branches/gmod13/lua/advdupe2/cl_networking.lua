@@ -37,7 +37,7 @@ local function AdvDupe2_ReceiveFile(len, ply, len2)
 	AdvDupe2.NetFile=AdvDupe2.NetFile..net.ReadString()
 
 	if(status==2)then
-		local path = ""
+		local path = AdvDupe2.AutoSavePath
 		if(AutoSave)then
 			if(LocalPlayer():GetInfo("advdupe2_auto_save_overwrite")~="1")then
 				path = CheckFileNameCl(AdvDupe2.AutoSavePath)
@@ -50,16 +50,18 @@ local function AdvDupe2_ReceiveFile(len, ply, len2)
 		local filename = string.Explode("/", path)
 		filename = filename[#filename]
 		if(AutoSave)then
-			local add = true
-			for i=1, #AdvDupe2.FileBrowser.AutoSaveNode.Files do
-				if(name==AdvDupe2.FileBrowser.AutoSaveNode.Files[i])then
-					add=false
-					break
+			if(IsValid(AdvDupe2.FileBrowser.AutoSaveNode))then
+				local add = true
+				for i=1, #AdvDupe2.FileBrowser.AutoSaveNode.Files do
+					if(filename==AdvDupe2.FileBrowser.AutoSaveNode.Files[i].Label:GetText())then
+						add=false
+						break
+					end
 				end
-			end
-			if(add)then
-				AdvDupe2.FileBrowser.AutoSaveNode:AddFile(filename)
-				AdvDupe2.FileBrowser.Browser.pnlCanvas:Sort(AdvDupe2.FileBrowser.AutoSaveNode)
+				if(add)then
+					AdvDupe2.FileBrowser.AutoSaveNode:AddFile(filename)
+					AdvDupe2.FileBrowser.Browser.pnlCanvas:Sort(AdvDupe2.FileBrowser.AutoSaveNode)
+				end
 			end
 		else
 			AdvDupe2.FileBrowser.Browser.pnlCanvas.ActionNode:AddFile(filename)

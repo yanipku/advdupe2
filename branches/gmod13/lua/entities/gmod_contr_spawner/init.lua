@@ -75,26 +75,60 @@ function ENT:UpdateOptions( options )
 end
 
 
-function ENT:AddGhosts(ply)
-	if(table.Count(self.EntityTable)>1)then
-		net.Start("AdvDupe2_SendContraptionGhost")
-			net.WriteInt(self:EntIndex(), 16)
-			net.WriteAngle(self.EntityTable[self.HeadEnt].PhysicsObjects[0].Angle)
-			net.WriteVector(self.Offset)
-			net.WriteInt(table.Count(self.EntityTable)-1, 16)
-			for EntIndex,v in pairs(self.EntityTable)do
-				if(EntIndex~=self.HeadEnt)then
-					net.WriteBit(v.Class=="prop_ragdoll")
-					net.WriteString(v.Model)
-					net.WriteInt(#v.PhysicsObjects, 8)
-					for k=0, #v.PhysicsObjects do
-						net.WriteAngle(v.PhysicsObjects[k].Angle)
-						net.WriteVector(v.PhysicsObjects[k].Pos)
-					end
-				end
+function ENT:AddGhosts()
+	local moveable = self:GetPhysicsObject():IsMoveable()
+	self:GetPhysicsObject():EnableMotion(false)
+
+	local EntTable
+	local GhostEntity
+	local Offset = self.DupeAngle - self.EntAngle
+	local Phys
+	for EntIndex,v in pairs(self.EntityTable)do
+		if(EntIndex!=self.HeadEnt)then
+			if(self.EntityTable[EntIndex].Class=="gmod_contr_spawner")then self.EntityTable[EntIndex] = nil continue end
+			EntTable = table.Copy(self.EntityTable[EntIndex])
+			if(EntTable.BuildDupeInfo && EntTable.BuildDupeInfo.PhysicsObjects)then
+				Phys = EntTable.BuildDupeInfo.PhysicsObjects[0]
+			else
+				if(!v.BuildDupeInfo)then v.BuildDupeInfo = {} end
+				v.BuildDupeInfo.PhysicsObjects = table.Copy(v.PhysicsObjects)
+				Phys = EntTable.PhysicsObjects[0]
 			end
-		net.Send(ply)
+			
+			GhostEntity = nil
+			
+			if(EntTable.Model==nil || !util.IsValidModel(EntTable.Model)) then EntTable.Model="models/error.mdl" end
+			
+			if ( EntTable.Model:sub( 1, 1 ) == "*" ) then
+				GhostEntity = ents.Create( "func_physbox" )
+			else
+				GhostEntity = ents.Create( "gmod_ghost" )
+			end
+			
+			// If there are too many entities we might not spawn..
+			if ( !GhostEntity || GhostEntity == NULL ) then return end
+			
+			duplicator.DoGeneric( GhostEntity, EntTable )
+			
+			GhostEntity:Spawn()
+			
+			GhostEntity:DrawShadow( false )
+			GhostEntity:SetMoveType( MOVETYPE_NONE )
+			GhostEntity:SetSolid( SOLID_VPHYSICS );
+			GhostEntity:SetNotSolid( true )
+			GhostEntity:SetRenderMode( RENDERMODE_TRANSALPHA )
+			GhostEntity:SetColor( Color(255, 255, 255, 150) )
+	
+			GhostEntity:SetAngles(Phys.Angle)
+			GhostEntity:SetPos(self:GetPos() + Phys.Pos - self.Offset)
+			self:SetAngles(self.EntAngle)
+			GhostEntity:SetParent( self )
+			self:SetAngles(self.DupeAngle)
+			self.Ghosts[EntIndex] = GhostEntity
+		end
 	end
+	self:SetAngles(self.DupeAngle)
+	self:GetPhysicsObject():EnableMotion(moveable)
 end
 
 function ENT:GetCreationDelay()	return self.delay	end
@@ -106,9 +140,9 @@ function ENT:SetDupeInfo( HeadEnt, EntityTable, ConstraintTable )
 	self.HeadEnt = HeadEnt
 	self.EntityTable = EntityTable
 	self.ConstraintTable = ConstraintTable
-	if(not self.DupeAngle)then self.DupeAngle = self:GetAngles() end
-	if(not self.EntAngle)then self.EntAngle = EntityTable[HeadEnt].PhysicsObjects[0].Angle end
-	if(not self.Offset)then self.Offset = self.EntityTable[HeadEnt].PhysicsObjects[0].Pos end
+	if(!self.DupeAngle)then self.DupeAngle = self:GetAngles() end
+	if(!self.EntAngle)then self.EntAngle = EntityTable[HeadEnt].PhysicsObjects[0].Angle end
+	if(!self.Offset)then self.Offset = self.EntityTable[HeadEnt].PhysicsObjects[0].Pos end
 	self.EntityTable[HeadEnt].PhysicsObjects[0].Pos = Vector(0,0,0)
 end
 
@@ -122,6 +156,14 @@ function ENT:DoSpawn( ply )
 		self.EntityTable[k].PhysicsObjects[0].Pos = v:GetPos()
 		self.EntityTable[k].PhysicsObjects[0].Angle = v:GetAngles()
 	end
+
+	/*local AngleOffset = self.EntAngle
+	AngleOffset = self:GetAngles() - AngleOffset
+	local AngleOffset2 = Angle(0,0,0)
+	//AngleOffset2.y = AngleOffset.y
+	AngleOffset2:RotateAroundAxis(self:GetUp(), AngleOffset.y)
+	AngleOffset2:RotateAroundAxis(self:GetRight(),AngleOffset.p)
+	AngleOffset2:RotateAroundAxis(self:GetForward(),AngleOffset.r)*/
 
 	local Ents, Constrs = AdvDupe2.duplicator.Paste(ply, table.Copy(self.EntityTable), table.Copy(self.ConstraintTable), nil, nil, Vector(0,0,0), true) 
 	local i = #self.UndoList+1
@@ -151,7 +193,7 @@ function ENT:DoSpawn( ply )
 	
 	if(self.undo_delay>0)then
 		timer.Simple(self.undo_delay, function()
-			if(self.UndoList and self.UndoList[i])then
+			if(self.UndoList && self.UndoList[i])then
 				for k,ent in pairs(self.UndoList[i]) do
 					if(IsValid(ent)) then
 						ent:Remove()
@@ -167,7 +209,7 @@ end
 
 function ENT:DoUndo( ply )
 	
-	if(not self.UndoList or #self.UndoList == 0)then return end
+	if(!self.UndoList || #self.UndoList == 0)then return end
 
 	local entities = self.UndoList[	#self.UndoList ]
 	self.UndoList[	#self.UndoList ] = nil
@@ -224,7 +266,7 @@ end
  *-----------------------------------------------------------------------*/
 function SpawnContrSpawner( ply, ent )
 
-	if (not ent or not ent:IsValid()) then return end
+	if (!ent || !ent:IsValid()) then return end
 
 	local delay = ent:GetTable():GetCreationDelay()
 	
@@ -242,7 +284,7 @@ end
  * Handler for undo keypad input
  *-----------------------------------------------------------------------*/
 function UndoContrSpawner( ply, ent )
-	if (not ent or not ent:IsValid()) then return end
+	if (!ent || !ent:IsValid()) then return end
 	ent:DoUndo( ply, true )
 end
 

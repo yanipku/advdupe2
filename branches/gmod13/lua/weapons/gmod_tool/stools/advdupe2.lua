@@ -714,7 +714,10 @@ if(SERVER)then
 		
 		AdvDupe2.Notify(ply, "Your area will be auto saved every "..(time*60).." seconds.")
 		local name = "AdvDupe2_AutoSave_"..ply:UniqueID()
-		if(timer.Exists(name))then return end
+		if(timer.Exists(name))then
+			timer.Adjust(name, time*60, 0)
+			return 
+		end
 		timer.Create(name, time*60, 0, function()
 			if(not IsValid(ply))then
 				timer.Remove(name)
@@ -1163,7 +1166,9 @@ if(CLIENT)then
 		NumSlider:SetText( "Area Copy Size:" )
 		NumSlider.Label:SetTextColor(Color(0,0,0,255))
 		NumSlider:SetMin( 0 )
-		NumSlider:SetMax( GetConVarNumber("AdvDupe2_MaxAreaCopySize") or 2500 )
+		local size = GetConVarNumber("AdvDupe2_MaxAreaCopySize") or 2500
+		if(size == 0)then size = 2500 end
+		NumSlider:SetMax( size )
 		NumSlider:SetDecimals( 0 )
 		NumSlider:SetConVar( "advdupe2_area_copy_size" )
 		NumSlider:SetToolTip("Change the size of the area copy")
