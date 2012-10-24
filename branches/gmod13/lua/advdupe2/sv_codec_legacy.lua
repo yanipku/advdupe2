@@ -314,7 +314,7 @@ local function lzwDecode(encoded)
 			end]]
 			
 			for i = pos+firstbyte, pos+1, -1 do
-				index = (index << 8) | byte(encoded,i)
+				index = bit.bor(bit.lshift(index, 8), byte(encoded,i))
 			end
 			pos = pos + firstbyte + 1
 		else
@@ -343,7 +343,7 @@ local function huffmanDecode(encoded)
 		error("invalid input")
 	end
 	
-	local original_length = (h3<<16) | (h2<<8) | h1
+	local original_length = bit.bor(bit.lshift(h3,16), bit.lshift(h2,8), h1)
 	local encoded_length = #encoded+1
 	local decoded = {}
 	local decoded_length = 0
@@ -357,11 +357,11 @@ local function huffmanDecode(encoded)
 	while decoded_length < original_length do
 		if code_len <= buffer_length then
 			temp = invcodes[code_len]
-			code = buffer & (1 << code_len)-1
+			code = bit.band(buffer, bit.lshift(1, code_len)-1)
 			if temp and temp[code] then --most of the time temp is nil
 				decoded_length = decoded_length + 1
 				decoded[decoded_length] = temp[code]
-				buffer = buffer >> code_len
+				buffer = bit.rshift(buffer, code_len)
 				buffer_length = buffer_length - code_len
 				code_len = 2
 			else
@@ -371,7 +371,7 @@ local function huffmanDecode(encoded)
 				end
 			end
 		else
-			buffer = buffer | (byte(encoded, pos) << buffer_length)
+			buffer = bit.bor(buffer, bit.lshift(byte(encoded, pos), buffer_length))
 			buffer_length = buffer_length + 8
 			pos = pos + 1
 			if pos > encoded_length then

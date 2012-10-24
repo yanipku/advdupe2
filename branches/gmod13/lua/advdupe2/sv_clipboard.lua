@@ -30,13 +30,13 @@ local constraints = {Weld=true,  Axis=true, Ballsocket=true, Elastic=true, Hydra
 ---------------------------------------------------------*/
 local function CopyEntTable( Ent, Offset )
 
-	if(!IsValid(Ent:GetPhysicsObject()))then return nil end
+	if(not IsValid(Ent:GetPhysicsObject()))then return nil end
 
 	local Tab = {}
 
 	if Ent.PreEntityCopy then
 		local status, valid = pcall(Ent.PreEntityCopy, Ent)
-		if(!status)then
+		if(not status)then
 			print("AD2 PreEntityCopy Error: "..tostring(valid))
 		end
 	end
@@ -49,7 +49,7 @@ local function CopyEntTable( Ent, Offset )
 		local Arg
 		for iNumber, Key in pairs( EntityClass.Args ) do
 			-- Translate keys from old system
-			if(Key!="Pos" or Key!="Model")then
+			if(Key~="Pos" or Key~="Model")then
 				if ( Key == "Angle" or Key == "ang" or Key == "Ang" or Key == "angle") then continue end
 				if ( Key == "pos" or Key == "position" ) then Key = "Pos" end
 				if ( Key == "model" ) then Key = "Model" end
@@ -69,7 +69,7 @@ local function CopyEntTable( Ent, Offset )
 
 	if Ent.PostEntityCopy then
 		local status, valid = pcall(Ent.PostEntityCopy, Ent)
-		if(!status)then
+		if(not status)then
 			print("AD2 PostEntityCopy Error: "..tostring(valid))
 		end
 	end
@@ -106,13 +106,13 @@ local function CopyEntTable( Ent, Offset )
 	Tab.PhysicsObjects[0].Pos = Tab.Pos - Offset
 
 	Tab.Pos = nil
-	if(Tab.Class!="prop_physics")then
-		if(!Tab.BuildDupeInfo)then Tab.BuildDupeInfo = {} end
+	if(Tab.Class~="prop_physics")then
+		if(not Tab.BuildDupeInfo)then Tab.BuildDupeInfo = {} end
 		Tab.BuildDupeInfo.IsNPC = Ent:IsNPC()
 		Tab.BuildDupeInfo.IsVehicle = Ent:IsVehicle()
 	end
 	if( IsValid(Ent:GetParent()) ) then
-		if(!Tab.BuildDupeInfo)then Tab.BuildDupeInfo = {} end
+		if(not Tab.BuildDupeInfo)then Tab.BuildDupeInfo = {} end
 		Tab.PhysicsObjects[ 0 ].Angle = Ent:GetAngles()
 		Tab.BuildDupeInfo.DupeParentID = Ent.Entity:GetParent():EntIndex()
 	end
@@ -124,7 +124,7 @@ local function CopyEntTable( Ent, Offset )
 	local flexes
 	for i = 0, FlexNum do
 		weight = Ent:GetFlexWeight( i )
-		if(weight!=0)then
+		if(weight~=0)then
 			Tab.Flex[ i ] = Ent:GetFlexWeight( i )
 			flexes = true
 		end
@@ -137,7 +137,7 @@ local function CopyEntTable( Ent, Offset )
 	end
 
 	if( EntTable.CollisionGroup )then
-		if ( !Tab.EntityMods ) then Tab.EntityMods = {} end
+		if ( not Tab.EntityMods ) then Tab.EntityMods = {} end
 		Tab.EntityMods.CollisionGroupMod = EntTable.CollisionGroup
 	end
 
@@ -145,7 +145,7 @@ local function CopyEntTable( Ent, Offset )
 	//  returned table specifically for your entity.
 	if Ent.OnEntityCopyTableFinish then
 		local status, valid = pcall(Ent.PostEntityCopy, Ent, Tab)
-		if(!status)then
+		if(not status)then
 			print("AD2 OnEntityCopyTableFinish Error: "..tostring(valid))
 		end
 	end
@@ -165,24 +165,23 @@ local function CopyConstraintTable( Const, Offset )
 
 	if(Const==nil)then return nil, {} end
 	local Type = duplicator.ConstraintType[ Const.Type ]
-	if(!Type)then return nil, {} end
+	if(not Type)then return nil, {} end
 	local Constraint = {}
 	local Entities = {}
 
 	Const.Constraint = nil
 	Const.OnDieFunctions=nil
 	Constraint.Entity={}
-
 	for k, key in pairs( Type.Args ) do
-		if(!string.find(key, "Ent") and !string.find(key, "Bone"))then
+		if(key~="pl" and not string.find(key, "Ent") and not string.find(key, "Bone"))then
 			Constraint[key] = Const[ key ]
-		end		
+		end
 	end	
 
-	if((Const["Ent"] && Const["Ent"]:IsWorld()) || IsValid(Const["Ent"]))then
+	if((Const["Ent"] and Const["Ent"]:IsWorld()) or IsValid(Const["Ent"]))then
 		Constraint.Entity[ 1 ] = {}
 		Constraint.Entity[ 1 ].Index = Const["Ent"]:EntIndex()
-		if(!Const["Ent"]:IsWorld())then table.insert( Entities, Const["Ent"] ) end
+		if(not Const["Ent"]:IsWorld())then table.insert( Entities, Const["Ent"] ) end
 		Constraint.Type = Const.Type
 		if(Const.BuildDupeInfo)then Constraint.BuildDupeInfo = table.Copy(Const.BuildDupeInfo) end
 	else
@@ -190,7 +189,7 @@ local function CopyConstraintTable( Const, Offset )
 		for i=1,4 do
 			ent = "Ent"..i
 
-			if((Const[ent] && Const[ent]:IsWorld()) || IsValid(Const[ent]))then
+			if((Const[ent] and Const[ent]:IsWorld()) or IsValid(Const[ent]))then
 				Constraint.Entity[ i ] 				= {}
 				Constraint.Entity[ i ].Index 		= Const[ent]:EntIndex()
 				Constraint.Entity[ i ].Bone			= Const[ "Bone"..i ]
@@ -200,7 +199,7 @@ local function CopyConstraintTable( Const, Offset )
 				if Const[ ent ]:IsWorld() then
 					Constraint.Entity[ i ].World = true
 					if ( Const[ "LPos"..i ] ) then
-						if(i!= 4 and i!=2)then
+						if(i~= 4 and i~=2)then
 							if(Const["Ent2"])then
 								Constraint.Entity[ i ].LPos = Const[ "LPos"..i ] - Const["Ent2"]:GetPos()
 								Constraint[ "LPos"..i ] = Const[ "LPos"..i ] - Const["Ent2"]:GetPos()
@@ -221,11 +220,11 @@ local function CopyConstraintTable( Const, Offset )
 					Constraint.Entity[ i ].WPos = Const[ "WPos"..i ]
 				end
 
-				if(!Const[ent]:IsWorld())then table.insert( Entities, Const[ent] ) end
+				if(not Const[ent]:IsWorld())then table.insert( Entities, Const[ent] ) end
 			end
 
 			if(Const["WPos"..i])then
-				if(!Const["Ent1"]:IsWorld())then
+				if(not Const["Ent1"]:IsWorld())then
 					Constraint["WPos"..i] = Const[ "WPos"..i ] - Const["Ent1"]:GetPos()
 				else
 					Constraint["WPos"..i] = Const[ "WPos"..i ] - Const["Ent4"]:GetPos()
@@ -236,7 +235,6 @@ local function CopyConstraintTable( Const, Offset )
 		Constraint.Type = Const.Type
 		if(Const.BuildDupeInfo)then Constraint.BuildDupeInfo = table.Copy(Const.BuildDupeInfo) end
 	end		
-
 	return Constraint, Entities
 end
 
@@ -254,7 +252,7 @@ local function Copy( Ent, EntTable, ConstraintTable, Offset )
 	EntTable[index] = CopyEntTable(Ent, Offset)
 	if(EntTable[index]==nil)then return EntTable, ConstraintTable end
 
-	if ( !constraint.HasConstraints( Ent ) ) then 
+	if ( not constraint.HasConstraints( Ent ) ) then 
 		for k,v in pairs(EntTable[Ent:EntIndex()].PhysicsObjects)do
 			Ent:GetPhysicsObjectNum(k):EnableMotion(v.Frozen)
 		end
@@ -264,14 +262,14 @@ local function Copy( Ent, EntTable, ConstraintTable, Offset )
 	local ConstTable, EntTab
 	for k, Constraint in pairs( Ent.Constraints ) do
 		index = Constraint:GetCreationID()
-		if(!index || ConstraintTable[index])then continue end
-
-		Constraint.Identity = index
-		ConstTable, EntTab = CopyConstraintTable( table.Copy(Constraint:GetTable()), Offset )
-		ConstraintTable[index] = ConstTable
-		for j,e in pairs(EntTab) do
-			if ( e and ( e:IsWorld() or e:IsValid() ) ) and ( !EntTable[e:EntIndex()] ) then
-				Copy( e, EntTable, ConstraintTable, Offset )
+		if(index and not ConstraintTable[index])then
+			Constraint.Identity = index
+			ConstTable, EntTab = CopyConstraintTable( table.Copy(Constraint:GetTable()), Offset )
+			ConstraintTable[index] = ConstTable
+			for j,e in pairs(EntTab) do
+				if ( e and ( e:IsWorld() or e:IsValid() ) ) and ( not EntTable[e:EntIndex()] ) then
+					Copy( e, EntTable, ConstraintTable, Offset )
+				end
 			end
 		end
 	end
@@ -293,22 +291,21 @@ AdvDupe2.duplicator.Copy = Copy
 local function LoadSents()
 	AdvDupe2.duplicator.EntityList = {prop_physics=true, prop_ragdoll=true, prop_vehicle_prisoner_pod=true, prop_vehicle_airboat=true, prop_vehicle_jeep=true, prop_vehicle_jeep_old=true, phys_magnet=true, prop_effect=true}
 	AdvDupe2.duplicator.WhiteList = {prop_physics=true, prop_ragdoll=true, prop_vehicle_prisoner_pod=true, prop_vehicle_airboat=true, prop_vehicle_jeep=true, prop_vehicle_jeep_old=true, phys_magnet=true, prop_effect=true}
-	local exclusion = {prop_effect= true, gmod_player_start=true, gmod_ghost=true, lua_run=true, gmod_wire_hologram=true}
+	local exclusion = {player=true, prop_effect=true, gmod_player_start=true, gmod_ghost=true, lua_run=true, gmod_wire_hologram=true, env_skypaint=true, widget_axis=true, info_player_axis=true, info_player_terrorist=true, info_player_counterterrorist=true, base_point=true, widget_bone=true, widget_base=true, widget_bones=true, widget_arrow=true, info_player_allies=true, gmod_player_start=true, widget_disc=true, base_ai=true, widget_bonemanip_rotate=true, widget_bonemanip_scale=true, widget_bonemanip_move=true}
+	local sub
 	for _,v in pairs(scripted_ents.GetList( )) do
-		if _:sub(1,4) == "base" then continue end
-		if _:sub(1,4) == "info" then continue end
-		if _:sub(1,4) == "func" then continue end
-		if exclusion[_] then continue end
-		if v.t.AdminSpawnable and !v.t.Spawnable then
-			AdvDupe2.duplicator.EntityList[_] = false
-		else
-			AdvDupe2.duplicator.EntityList[_] = true
+		sub = _:sub(1,4)
+		if sub ~= "base" and sub ~= "info" and sub ~= "func" and not exclusion[_] then
+			if v.t.AdminSpawnable and not v.t.Spawnable then
+				AdvDupe2.duplicator.EntityList[_] = false
+			else
+				AdvDupe2.duplicator.EntityList[_] = true
+			end
+			AdvDupe2.duplicator.WhiteList[_] = true
 		end
-		AdvDupe2.duplicator.WhiteList[_] = true
 	end
 end
-//concommand.Add("advdupe2_reloadwhitelist", LoadSents)
-hook.Add( "InitPostEntity", "LoadDuplicatingEntities", LoadSents)
+hook.Add( "InitPostEntity", "AdvDupe2_LoadDuplicatingEntities", LoadSents)
 
 --[[
 	Name: AreaCopy
@@ -324,35 +321,35 @@ function AdvDupe2.duplicator.AreaCopy( Entities, Offset, CopyOutside )
 
 		index = Ent:EntIndex()
 		EntTable[index] = CopyEntTable(Ent, Offset)
-		if(EntTable[index]==nil)then continue end
+		if(EntTable[index]~=nil)then
 		
-		if ( !constraint.HasConstraints( Ent ) ) then
-			for k,v in pairs(EntTable[Ent:EntIndex()].PhysicsObjects)do
-				Ent:GetPhysicsObjectNum(k):EnableMotion(v.Frozen)
+			if ( not constraint.HasConstraints( Ent ) ) then
+				for k,v in pairs(EntTable[Ent:EntIndex()].PhysicsObjects)do
+					Ent:GetPhysicsObjectNum(k):EnableMotion(v.Frozen)
+				end
+			else
+				for k,v in pairs(Ent.Constraints)do
+					index = v:GetCreationID()
+					if(index and not Constraints[index])then
+						v.Identity = v:GetCreationID()
+						Constraints[index] = v
+					end
+				end
+				
+				for k,v in pairs(EntTable[Ent:EntIndex()].PhysicsObjects)do
+					Ent:GetPhysicsObjectNum(k):EnableMotion(v.Frozen)
+				end
 			end
-			continue
-		end
-		
-		for k,v in pairs(Ent.Constraints)do
-			index = v:GetCreationID()
-			if(!index || Constraints[index])then continue end
-			
-			v.Identity = v:GetCreationID()
-			Constraints[index] = v
-		end
-		
-		for k,v in pairs(EntTable[Ent:EntIndex()].PhysicsObjects)do
-			Ent:GetPhysicsObjectNum(k):EnableMotion(v.Frozen)
 		end
 	end
 
 	for _, Constraint in pairs( Constraints ) do
 		ConstTable, EntTab = CopyConstraintTable( table.Copy(Constraint:GetTable()), Offset )
 		//If the entity is constrained to an entity outside of the area box, don't copy the constraint.
-		if(!CopyOutside)then
+		if(not CopyOutside)then
 			add = true
 			for k,v in pairs(EntTab)do
-				if(!Entities[v:EntIndex()])then add=false end
+				if(not Entities[v:EntIndex()])then add=false end
 			end
 			if(add)then ConstraintTable[_] = ConstTable  end
 		else	//Copy entities and constraints outside of the box that are constrained to entities inside the box
@@ -399,7 +396,7 @@ local function CreateConstraintFromTable(Constraint, EntityList, EntityTable, Pl
 					else				
 						Val = EntityList[ Constraint.Entity[ i ].Index ]
 
-						if not ValidEntity(Val) then
+						if not IsValid(Val) then
 							if(Player)then
 								Player:ChatPrint("DUPLICATOR: ERROR, "..Constraint.Type.." Constraint could not find an entity!")
 							else
@@ -412,7 +409,7 @@ local function CreateConstraintFromTable(Constraint, EntityList, EntityTable, Pl
 							end
 							--Important for perfect duplication
 							--Get which entity is which so we can reposition them before constraining
-							if(Key== "Ent" || Key == "Ent1")then
+							if(Key== "Ent" or Key == "Ent1")then
 								first=Val
 								firstindex = Constraint.Entity[ i ].Index 
 							else
@@ -428,8 +425,8 @@ local function CreateConstraintFromTable(Constraint, EntityList, EntityTable, Pl
 				if Key == "Bone"..i or Key == "Bone" then Val = Constraint.Entity[ i ].Bone end
 
 				if Key == "LPos"..i then
-					if (Constraint.Entity[i].World && Constraint.Entity[i].LPos)then
-						if(i==2 || i==4)then
+					if (Constraint.Entity[i].World and Constraint.Entity[i].LPos)then
+						if(i==2 or i==4)then
 							Val = Constraint.Entity[i].LPos + EntityList[Constraint.Entity[1].Index]:GetPos()
 						elseif(i==1)then
 							if(Constraint.Entity[2])then
@@ -446,7 +443,7 @@ local function CreateConstraintFromTable(Constraint, EntityList, EntityTable, Pl
 				if Key == "Length"..i then Val = Constraint.Entity[ i ].Length end
 			end
 			if Key == "WPos"..i then
-				if(!Constraint.Entity[1].World)then
+				if(not Constraint.Entity[1].World)then
 					Val = Constraint["WPos"..i] + EntityList[Constraint.Entity[1].Index]:GetPos()
 				else
 					Val = Constraint["WPos"..i] + EntityList[Constraint.Entity[4].Index]:GetPos()
@@ -469,7 +466,7 @@ local function CreateConstraintFromTable(Constraint, EntityList, EntityTable, Pl
 	if(Constraint.BuildDupeInfo)then
 
 		if second ~= nil and not second:IsWorld() and Constraint.BuildDupeInfo.EntityPos ~= nil then
-			if(!DontEnable)then ReEnableSecond = second:GetPhysicsObject():IsMoveable() end
+			if(not DontEnable)then ReEnableSecond = second:GetPhysicsObject():IsMoveable() end
 			second:GetPhysicsObject():EnableMotion(false)
 			second:SetPos(first:GetPos()-Constraint.BuildDupeInfo.EntityPos)
 			if(Constraint.BuildDupeInfo.Bone2) then
@@ -482,7 +479,7 @@ local function CreateConstraintFromTable(Constraint, EntityList, EntityTable, Pl
 		end
 
 		if first ~= nil and Constraint.BuildDupeInfo.Ent1Ang ~= nil then
-			if(!DontEnable)then ReEnableFirst = first:GetPhysicsObject():IsMoveable() end
+			if(not DontEnable)then ReEnableFirst = first:GetPhysicsObject():IsMoveable() end
 			first:GetPhysicsObject():EnableMotion(false)
 			first:SetAngles(Constraint.BuildDupeInfo.Ent1Ang)
 			if(Constraint.BuildDupeInfo.Bone1) then
@@ -518,19 +515,19 @@ local function CreateConstraintFromTable(Constraint, EntityList, EntityTable, Pl
 
 	//Move the entities back after constraining them
 	if(EntityTable)then
-		if(first!=nil)then
+		if(first~=nil)then
 			first:SetPos(EntityTable[firstindex].BuildDupeInfo.PosReset)
 			first:SetAngles(EntityTable[firstindex].BuildDupeInfo.AngleReset)
-			if(Bone1 && Bone1Index!=0)then
+			if(Bone1 and Bone1Index~=0)then
 				Bone1:SetPos(EntityTable[firstindex].BuildDupeInfo.PosReset + EntityTable[firstindex].BuildDupeInfo.PhysicsObjects[Bone1Index].Pos)
 				Bone1:SetAngles(EntityTable[firstindex].PhysicsObjects[Bone1Index].Angle)
 			end
 			if(ReEnableFirst)then first:GetPhysicsObject():EnableMotion(true) end
 		end
-		if(second!=nil)then
+		if(second~=nil)then
 			second:SetPos(EntityTable[secondindex].BuildDupeInfo.PosReset)
 			second:SetAngles(EntityTable[secondindex].BuildDupeInfo.AngleReset)
-			if(Bone2 && Bone2Index!=0)then
+			if(Bone2 and Bone2Index~=0)then
 				Bone2:SetPos(EntityTable[secondindex].BuildDupeInfo.PosReset + EntityTable[secondindex].BuildDupeInfo.PhysicsObjects[Bone2Index].Pos)
 				Bone2:SetAngles(EntityTable[secondindex].PhysicsObjects[Bone2Index].Angle)
 			end
@@ -544,20 +541,20 @@ local function CreateConstraintFromTable(Constraint, EntityList, EntityTable, Pl
 end
 
 local function ApplyEntityModifiers( Player, Ent )
-	if(!Ent.EntityMods)then return end
+	if(not Ent.EntityMods)then return end
 	if(Ent.EntityMods["CollisionGroupMod"])then Ent:SetCollisionGroup(Ent.EntityMods["CollisionGroupMod"]) end
 	local status, error
 	for Type, ModFunction in pairs( duplicator.EntityModifiers ) do
 		if ( Ent.EntityMods[ Type ] ) then
 			status, error = pcall(ModFunction, Player, Ent, Ent.EntityMods[ Type ] )
-			if(!status)then
+			if(not status)then
 				Player:ChatPrint('Error applying entity modifer, "'..tostring(Type)..'". ERROR: '..error)
 			end
 		end
 	end
-	if(Ent.EntityMods["mass"] && duplicator.EntityModifiers["mass"])then
+	if(Ent.EntityMods["mass"] and duplicator.EntityModifiers["mass"])then
 		status, error = pcall(duplicator.EntityModifiers["mass"], Player, Ent, Ent.EntityMods["mass"] )
-		if(!status)then
+		if(not status)then
 			Player:ChatPrint('Error applying entity modifer, "mass". ERROR: '..error)
 		end
 	end
@@ -565,16 +562,16 @@ local function ApplyEntityModifiers( Player, Ent )
 end
 
 local function ApplyBoneModifiers( Player, Ent )
-	if(!Ent.BoneMods || !Ent.PhysicsObjects)then return end
+	if(not Ent.BoneMods or not Ent.PhysicsObjects)then return end
 
 	local status, error, PhysObject
 	for Type, ModFunction in pairs( duplicator.BoneModifiers ) do
 		for Bone, Args in pairs( Ent.PhysicsObjects ) do
-			if ( Ent.BoneMods[ Bone ] && Ent.BoneMods[ Bone ][ Type ] ) then 
+			if ( Ent.BoneMods[ Bone ] and Ent.BoneMods[ Bone ][ Type ] ) then 
 				PhysObject = Ent:GetPhysicsObjectNum( Bone )
 				if ( Ent.PhysicsObjects[ Bone ] ) then
 					status, error = pcall(ModFunction, Player, Ent, Bone, PhysObject, Ent.BoneMods[ Bone ][ Type ] )
-					if(!status)then
+					if(not status)then
 						Player:ChatPrint('Error applying bone modifer, "'..tostring(Type)..'". ERROR: '..error)
 					end
 				end
@@ -591,17 +588,28 @@ end
 ]]
 local function DoGenericPhysics( Entity, data, Player )
 
-	if (!data) then return end
-	if (!data.PhysicsObjects) then return end
+	if (not data) then return end
+	if (not data.PhysicsObjects) then return end
 	local Phys
-	for Bone, Args in pairs( data.PhysicsObjects ) do
-		Phys = Entity:GetPhysicsObjectNum(Bone)
-		if ( IsValid(Phys) ) then	
-			Phys:SetPos( Args.Pos )
-			Phys:SetAngles( Args.Angle )
-			Phys:EnableMotion( false ) 	
-			Player:AddFrozenPhysicsObject( Entity, Phys )
-		end	
+	if(Player)then
+		for Bone, Args in pairs( data.PhysicsObjects ) do
+			Phys = Entity:GetPhysicsObjectNum(Bone)
+			if ( IsValid(Phys) ) then	
+				Phys:SetPos( Args.Pos )
+				Phys:SetAngles( Args.Angle )
+				Phys:EnableMotion( false ) 	
+				Player:AddFrozenPhysicsObject( Entity, Phys )
+			end	
+		end
+	else
+		for Bone, Args in pairs( data.PhysicsObjects ) do
+			Phys = Entity:GetPhysicsObjectNum(Bone)
+			if ( IsValid(Phys) ) then	
+				Phys:SetPos( Args.Pos )
+				Phys:SetAngles( Args.Angle )
+				Phys:EnableMotion( false ) 	
+			end	
+		end
 	end
 end
 
@@ -626,7 +634,7 @@ end
 local function GenericDuplicatorFunction( data, Player )
 
 	local Entity = ents.Create( data.Class )
-	if ( !ValidEntity(Entity) ) then 
+	if ( not IsValid(Entity) ) then 
 		if(Player)then
 			reportclass(Player,data.Class)
 		else
@@ -635,7 +643,7 @@ local function GenericDuplicatorFunction( data, Player )
 		return nil
 	end
 
-	if( !util.IsValidModel(data.Model) )then
+	if( not util.IsValidModel(data.Model) )then
 		if(Player)then
 			reportmodel(Player,data.Model)
 		else
@@ -662,7 +670,7 @@ end
 ]]
 local function MakeProp(Player, Pos, Ang, Model, PhysicsObject, Data)
 
-	if( !util.IsValidModel(Model) )then
+	if( not util.IsValidModel(Model) )then
 		if(Player)then
 			reportmodel(Player,Data.Model)
 		else
@@ -677,11 +685,11 @@ local function MakeProp(Player, Pos, Ang, Model, PhysicsObject, Data)
 	Data.Frozen = true
 	// Make sure this is allowed
 	if( Player )then
-		if ( !gamemode.Call( "PlayerSpawnProp", Player, Model ) ) then return false end
+		if ( not gamemode.Call( "PlayerSpawnProp", Player, Model ) ) then return false end
 	end
 
 	local Prop = ents.Create( "prop_physics" )
-	if !IsValid(Prop) then return false end
+	if not IsValid(Prop) then return false end
 
 	duplicator.DoGeneric( Prop, Data )
 	Prop:Spawn()
@@ -701,8 +709,8 @@ end
 local function CreateEntityFromTable(EntTable, Player)
 
 	local EntityClass = duplicator.FindEntityClass( EntTable.Class )
-	if ( !Player:IsAdmin( ) && !Player:IsSuperAdmin() && !SinglePlayer())then
-		if(!AdvDupe2.duplicator.EntityList[EntTable.Class])then 
+	if ( Player and not Player:IsAdmin( ) and not Player:IsSuperAdmin() and not game.SinglePlayer())then
+		if(not AdvDupe2.duplicator.EntityList[EntTable.Class])then 
 			Player:ChatPrint([[Entity Class Black listed, "]]..EntTable.Class..[["]]) 
 			return nil 
 		end
@@ -713,7 +721,7 @@ local function CreateEntityFromTable(EntTable, Player)
 	local GENERIC = false
 	// This class is unregistered. Instead of failing try using a generic
 	// Duplication function to make a new copy.
-	if (!EntityClass) then
+	if (not EntityClass) then
 		GENERIC = true
 		sent = true
 
@@ -732,7 +740,7 @@ local function CreateEntityFromTable(EntTable, Player)
 			sent = true
 		end
 
-		if( SinglePlayer() || AdvDupe2.duplicator.WhiteList[EntTable.Class]  || (EntTable.BuildDupeInfo.IsNPC && (tobool(GetConVarString("AdvDupe2_AllowNPCPasting")) && string.sub(EntTable.Class, 1, 4)=="npc_")))then
+		if( game.SinglePlayer() or AdvDupe2.duplicator.WhiteList[EntTable.Class]  or (EntTable.BuildDupeInfo.IsNPC and (tobool(GetConVarString("AdvDupe2_AllowNPCPasting")) and string.sub(EntTable.Class, 1, 4)=="npc_")))then
 			status, valid = pcall(GenericDuplicatorFunction, EntTable, Player )
 		else
 			print("Advanced Duplicator 2: ENTITY CLASS IS BLACKLISTED, CLASS NAME: "..EntTable.Class)
@@ -740,7 +748,7 @@ local function CreateEntityFromTable(EntTable, Player)
 		end
 	end
 
-	if(!GENERIC)then
+	if(not GENERIC)then
 		
 		// Build the argument list for the Entitie's spawn function
 		local ArgList = {}
@@ -749,10 +757,10 @@ local function CreateEntityFromTable(EntTable, Player)
 
 			Arg = nil
 			// Translate keys from old system
-			if ( Key == "pos" || Key == "position" ) then Key = "Pos" end
-			if ( Key == "ang" || Key == "Ang" || Key == "angle" ) then Key = "Angle" end
+			if ( Key == "pos" or Key == "position" ) then Key = "Pos" end
+			if ( Key == "ang" or Key == "Ang" or Key == "angle" ) then Key = "Angle" end
 			if ( Key == "model" ) then Key = "Model" end
-			if ( Key == "VehicleTable" && EntTable[Key] && EntTable[Key].KeyValues)then
+			if ( Key == "VehicleTable" and EntTable[Key] and EntTable[Key].KeyValues)then
 				EntTable[Key].KeyValues = {vehiclescript=EntTable[Key].KeyValues.vehiclescript, limitview=EntTable[Key].KeyValues.limitview}
 			end
 
@@ -768,11 +776,11 @@ local function CreateEntityFromTable(EntTable, Player)
 		// Create and return the entity
 		if(EntTable.Class=="prop_physics")then
 			valid = MakeProp(Player, unpack(ArgList)) //Create prop_physics like this because if the model doesn't exist it will cause
-		elseif( SinglePlayer() || AdvDupe2.duplicator.WhiteList[EntTable.Class] || (EntTable.BuildDupeInfo.IsNPC && (tobool(GetConVarString("AdvDupe2_AllowNPCPasting")) && string.sub(EntTable.Class, 1, 4)=="npc_")))then
+		elseif( game.SinglePlayer() or AdvDupe2.duplicator.WhiteList[EntTable.Class] or (EntTable.BuildDupeInfo.IsNPC and (tobool(GetConVarString("AdvDupe2_AllowNPCPasting")) and string.sub(EntTable.Class, 1, 4)=="npc_")))then
 			//Create sents using their spawn function with the arguments we stored earlier
 			sent = true
 
-			/*if(!EntTable.BuildDupeInfo.IsVehicle || !EntTable.BuildDupeInfo.IsNPC || EntTable.Class!="prop_ragdoll")then	//These three are auto done
+			/*if(not EntTable.BuildDupeInfo.IsVehicle or not EntTable.BuildDupeInfo.IsNPC or EntTable.Class~="prop_ragdoll")then	//These three are auto done
 				sent = gamemode.Call( "PlayerSpawnSENT", Player, EntTable.Class)
 			end
 			*/
@@ -792,20 +800,29 @@ local function CreateEntityFromTable(EntTable, Player)
 	end
 
 	//If its a valid entity send it back to the entities list so we can constrain it
-	if( status!=false and IsValid(valid) )then
+	if( status~=false and IsValid(valid) )then
 		if(sent)then
 			local iNumPhysObjects = valid:GetPhysicsObjectCount()
 			local PhysObj
-			for Bone = 0, iNumPhysObjects-1 do 
-				PhysObj = valid:GetPhysicsObjectNum( Bone )
-				if IsValid(PhysObj) then
-					PhysObj:EnableMotion(false)
-					Player:AddFrozenPhysicsObject( valid, PhysObj )
+			if(Player)then
+				for Bone = 0, iNumPhysObjects-1 do 
+					PhysObj = valid:GetPhysicsObjectNum( Bone )
+					if IsValid(PhysObj) then
+						PhysObj:EnableMotion(false)
+						Player:AddFrozenPhysicsObject( valid, PhysObj )
+					end
+				end
+			else
+				for Bone = 0, iNumPhysObjects-1 do 
+					PhysObj = valid:GetPhysicsObjectNum( Bone )
+					if IsValid(PhysObj) then
+						PhysObj:EnableMotion(false)
+					end
 				end
 			end
 			if(EntTable.Skin)then valid:SetSkin(EntTable.Skin) end
 			/*if(Player)then
-				if(!valid:IsVehicle() && EntTable.Class!="prop_ragdoll" && !valid:IsNPC())then	//These three get called automatically
+				if(not valid:IsVehicle() and EntTable.Class~="prop_ragdoll" and not valid:IsNPC())then	//These three get called automatically
 					if(EntTable.Class=="prop_effect")then
 						gamemode.Call("PlayerSpawnedEffect", Player, valid:GetModel(), valid)
 					else
@@ -813,7 +830,7 @@ local function CreateEntityFromTable(EntTable, Player)
 					end
 				end
 			end*/
-		else
+		elseif(Player)then
 			gamemode.Call( "PlayerSpawnedProp", Player, valid:GetModel(), valid )
 		end
 
@@ -841,7 +858,7 @@ function AdvDupe2.duplicator.Paste( Player, EntityList, ConstraintList, Position
 	--
 	local proppos
 	for k, v in pairs( EntityList ) do
-		if(!v.BuildDupeInfo)then v.BuildDupeInfo={} end
+		if(not v.BuildDupeInfo)then v.BuildDupeInfo={} end
 		v.BuildDupeInfo.PhysicsObjects = table.Copy(v.PhysicsObjects)
 		proppos = v.PhysicsObjects[0].Pos
 		v.BuildDupeInfo.PhysicsObjects[0].Pos = Vector(0,0,0)
@@ -905,13 +922,13 @@ function AdvDupe2.duplicator.Paste( Player, EntityList, ConstraintList, Position
 				--If the entity has a PostEntityPaste function tell it to use it now
 				if v.PostEntityPaste then
 					local status, valid = pcall(v.PostEntityPaste, v, Player, v, CreatedEntities)
-					if(!status)then
+					if(not status)then
 						print("AD2 PostEntityPaste Error: "..tostring(valid))
 					end
 				end
 				v:GetPhysicsObject():EnableMotion(false)
 
-				if(EntityList[_].BuildDupeInfo.DupeParentID && Parenting)then
+				if(EntityList[_].BuildDupeInfo.DupeParentID and Parenting)then
 					v:SetParent(CreatedEntities[EntityList[_].BuildDupeInfo.DupeParentID])
 				end
 				v:SetNotSolid(false)
@@ -927,13 +944,13 @@ function AdvDupe2.duplicator.Paste( Player, EntityList, ConstraintList, Position
 				--If the entity has a PostEntityPaste function tell it to use it now
 			if v.PostEntityPaste then
 				local status, valid = pcall(v.PostEntityPaste, v, Player, v, CreatedEntities)
-				if(!status)then
+				if(not status)then
 					print("AD2 PostEntityPaste Error: "..tostring(valid))
 				end
 			end
 			v:GetPhysicsObject():EnableMotion(false)
 
-			if(EntityList[_].BuildDupeInfo.DupeParentID && Parenting)then
+			if(EntityList[_].BuildDupeInfo.DupeParentID and Parenting)then
 				v:SetParent(CreatedEntities[EntityList[_].BuildDupeInfo.DupeParentID])
 			end
 
@@ -957,7 +974,7 @@ local function AdvDupe2_Spawn()
 	
 	local Queue = AdvDupe2.JobManager.Queue[AdvDupe2.JobManager.CurrentPlayer]
 
-	if(!IsValid(Queue.Player))then
+	if(not IsValid(Queue.Player))then
 		table.remove(AdvDupe2.JobManager.Queue, AdvDupe2.JobManager.CurrentPlayer)
 		if(#AdvDupe2.JobManager.Queue==0)then 
 			hook.Remove("Tick", "AdvDupe2_Spawning")
@@ -978,12 +995,12 @@ local function AdvDupe2_Spawn()
 			Queue.Current = 1
 			return
 		end
-		if(!Queue.SortedEntities[Queue.Current])then Queue.Current = Queue.Current+1 return end
+		if(not Queue.SortedEntities[Queue.Current])then Queue.Current = Queue.Current+1 return end
 
 		local k = Queue.SortedEntities[Queue.Current]
 		local v = Queue.EntityList[k]
 
-		if(!v.BuildDupeInfo)then v.BuildDupeInfo={} end
+		if(not v.BuildDupeInfo)then v.BuildDupeInfo={} end
 		if(v.LocalPos)then
 			for i,p in pairs(v.PhysicsObjects) do
 				v.PhysicsObjects[i] = {Pos=v.LocalPos, Angle=v.LocalAngle} 
@@ -1022,7 +1039,7 @@ local function AdvDupe2_Spawn()
 
 			local Phys = Ent:GetPhysicsObject()
 			if(IsValid(Phys))then Phys:EnableMotion(false) end
-			if(!Queue.DisableProtection)then Ent:SetNotSolid(true) end
+			if(not Queue.DisableProtection)then Ent:SetNotSolid(true) end
 		elseif(Ent==false)then
 			Ent = nil
 			Queue.Entity = false
@@ -1046,7 +1063,7 @@ local function AdvDupe2_Spawn()
 				--If the entity has a PostEntityPaste function tell it to use it now
 				if Ent.PostEntityPaste then
 					local status, valid = pcall(Ent.PostEntityPaste, Ent, Queue.Player, Ent, Queue.CreatedEntities)
-					if(!status)then
+					if(not status)then
 						print("AD2 PostEntityPaste Error: "..tostring(valid))
 					end
 				end
@@ -1069,13 +1086,13 @@ local function AdvDupe2_Spawn()
 				hook.Remove("Tick", "AdvDupe2_Spawning")
 				AdvDupe2.JobManager.PastingHook = false
 			end
-			if(!Queue.ConstraintList[Queue.Current])then Queue.Current = Queue.Current+1 return end
+			if(not Queue.ConstraintList[Queue.Current])then Queue.Current = Queue.Current+1 return end
 
 			local Entity = CreateConstraintFromTable( Queue.ConstraintList[Queue.Current], Queue.CreatedEntities, Queue.EntityList, Queue.Player, true )
 			if IsValid(Entity) then
 				table.insert( Queue.CreatedConstraints, Entity )
 			end
-		elseif(Queue.ConstraintList && Queue.ConstraintList!={})then
+		elseif(Queue.ConstraintList and Queue.ConstraintList~={})then
 			local tbl = {}
 			for k,v in pairs(Queue.ConstraintList)do
 				table.insert(tbl, v)
@@ -1096,7 +1113,7 @@ local function AdvDupe2_Spawn()
 			local undos = undo.GetTable()[Queue.Player:UniqueID()]
 			local str = "AdvDupe2_"..Queue.Player:UniqueID()
 			for i=#undos, 1, -1 do
-				if(undos[i] && undos[i].Name == str)then
+				if(undos[i] and undos[i].Name == str)then
 					undos[i] = nil
 					umsg.Start( "Undone", Queue.Player )
 						umsg.Long( i )
@@ -1110,67 +1127,70 @@ local function AdvDupe2_Spawn()
 				local edit
 				local mass
 				for _,v in pairs( Queue.CreatedEntities ) do
-					if(!IsValid(v))then v = nil continue end
-					edit = true
-					if(Queue.EntityList[_].BuildDupeInfo.DupeParentID!=nil && Queue.Parenting)then
-						v:SetParent(Queue.CreatedEntities[Queue.EntityList[_].BuildDupeInfo.DupeParentID])
-						if(v.Constraints!=nil)then
-							for i,c in pairs(v.Constraints)do
-								if(c && constraints[c.Type])then
-									edit=false
-									break
+					if(not IsValid(v))then 
+						v = nil
+					else
+						edit = true
+						if(Queue.EntityList[_].BuildDupeInfo.DupeParentID~=nil and Queue.Parenting)then
+							v:SetParent(Queue.CreatedEntities[Queue.EntityList[_].BuildDupeInfo.DupeParentID])
+							if(v.Constraints~=nil)then
+								for i,c in pairs(v.Constraints)do
+									if(c and constraints[c.Type])then
+										edit=false
+										break
+									end
 								end
 							end
-						end
-						if(edit && IsValid(v:GetPhysicsObject()))then
-							mass = v:GetPhysicsObject():GetMass()
-							v:PhysicsInitShadow(false, false)
-							v:SetCollisionGroup(COLLISION_GROUP_WORLD)
-							v:GetPhysicsObject():EnableMotion(false)
-							v:GetPhysicsObject():Sleep()
-							v:GetPhysicsObject():SetMass(mass)
-						end
-					else
-						edit=false
-					end
-
-					if(unfreeze)then
-						for i=0, v:GetPhysicsObjectCount() do
-							phys = v:GetPhysicsObjectNum(i)
-							if(IsValid(phys))then
-								phys:EnableMotion(true)	//Unfreeze the entitiy and all of its objects
-								phys:Wake()
+							if(edit and IsValid(v:GetPhysicsObject()))then
+								mass = v:GetPhysicsObject():GetMass()
+								v:PhysicsInitShadow(false, false)
+								v:SetCollisionGroup(COLLISION_GROUP_WORLD)
+								v:GetPhysicsObject():EnableMotion(false)
+								v:GetPhysicsObject():Sleep()
+								v:GetPhysicsObject():SetMass(mass)
 							end
+						else
+							edit=false
 						end
-					elseif(preservefrozenstate)then
-						for i=0, v:GetPhysicsObjectCount() do
-							phys = v:GetPhysicsObjectNum(i)
-							if(IsValid(phys))then
-								if(Queue.EntityList[_].BuildDupeInfo.PhysicsObjects[i].Frozen)then
-									phys:EnableMotion(true)	//Restore the entity and all of its objects to their original frozen state
+
+						if(unfreeze)then
+							for i=0, v:GetPhysicsObjectCount() do
+								phys = v:GetPhysicsObjectNum(i)
+								if(IsValid(phys))then
+									phys:EnableMotion(true)	//Unfreeze the entitiy and all of its objects
 									phys:Wake()
-								else 
-									Queue.Player:AddFrozenPhysicsObject( v, phys ) 
+								end
+							end
+						elseif(preservefrozenstate)then
+							for i=0, v:GetPhysicsObjectCount() do
+								phys = v:GetPhysicsObjectNum(i)
+								if(IsValid(phys))then
+									if(Queue.EntityList[_].BuildDupeInfo.PhysicsObjects[i].Frozen)then
+										phys:EnableMotion(true)	//Restore the entity and all of its objects to their original frozen state
+										phys:Wake()
+									else 
+										Queue.Player:AddFrozenPhysicsObject( v, phys ) 
+									end
+								end
+							end
+						else
+							for i=0, v:GetPhysicsObjectCount() do
+								phys = v:GetPhysicsObjectNum(i)
+								if(IsValid(phys))then
+									if(phys:IsMoveable())then
+										phys:EnableMotion(false)	//Freeze the entitiy and all of its objects
+										Queue.Player:AddFrozenPhysicsObject( v, phys )
+									end
 								end
 							end
 						end
-					else
-						for i=0, v:GetPhysicsObjectCount() do
-							phys = v:GetPhysicsObjectNum(i)
-							if(IsValid(phys))then
-								if(phys:IsMoveable())then
-									phys:EnableMotion(false)	//Freeze the entitiy and all of its objects
-									Queue.Player:AddFrozenPhysicsObject( v, phys )
-								end
-							end
+
+						if(not edit or not Queue.DisableParents)then 
+							v:SetNotSolid(false)
 						end
-					end
 
-					if(!edit || !Queue.DisableParents)then 
-						v:SetNotSolid(false)
+						undo.AddEntity( v )
 					end
-
-					undo.AddEntity( v )
 				end
 				undo.SetCustomUndoText("Undone "..(Queue.Name or "Advanced Duplication"))
 				undo.SetPlayer( Queue.Player )
@@ -1196,17 +1216,17 @@ end
 local function ErrorCatchSpawning()
 
 	local status, error = pcall(AdvDupe2_Spawn)
-	if(!status)then
+	if(not status)then
 		//PUT ERROR LOGGING HERE
 		
-		if(!AdvDupe2.JobManager.Queue)then
+		if(not AdvDupe2.JobManager.Queue)then
 			print("[AdvDupe2Notify]\t"..error)
 			AdvDupe2.JobManager.Queue = {}
 			return
 		end
 		
 		local Queue = AdvDupe2.JobManager.Queue[AdvDupe2.JobManager.CurrentPlayer]
-		if(!Queue)then
+		if(not Queue)then
 			print("[AdvDupe2Notify]\t"..error)
 			return
 		end
@@ -1217,7 +1237,7 @@ local function ErrorCatchSpawning()
 			local undos = undo.GetTable()[Queue.Player:UniqueID()]
 			local str = "AdvDupe2_"..Queue.Player:UniqueID()
 			for i=#undos, 1, -1 do
-				if(undos[i] && undos[i].Name == str)then
+				if(undos[i] and undos[i].Name == str)then
 					undos[i] = nil
 					umsg.Start( "Undone", Queue.Player )
 						umsg.Long( i )
@@ -1252,7 +1272,7 @@ local function ErrorCatchSpawning()
 end
 
 local function RemoveSpawnedEntities(tbl, i)
-	if(!AdvDupe2.JobManager.Queue[i])then return end //Without this some errors come up, double check the errors without this line
+	if(not AdvDupe2.JobManager.Queue[i])then return end //Without this some errors come up, double check the errors without this line
 
 	for k,v in pairs(AdvDupe2.JobManager.Queue[i].CreatedEntities)do
 		if(IsValid(v))then
@@ -1286,7 +1306,11 @@ function AdvDupe2.InitPastingQueue(Player, PositionOffset, AngleOffset, OrigPos,
 		table.insert(Queue.SortedEntities, k)
 	end
 
-	print("[AdvDupe2NotifyPaste]\t".." Player: "..Player:Nick().." Pasted, "..#Queue.SortedEntities.." Entities and "..#Player.AdvDupe2.Constraints.." Constraints.")
+	if(Player.AdvDupe2.Name)then
+		print("[AdvDupe2NotifyPaste]\t Player: "..Player:Nick().." Pasted File, "..Player.AdvDupe2.Name.." with, "..#Queue.SortedEntities.." Entities and "..#Player.AdvDupe2.Constraints.." Constraints.")
+	else
+		print("[AdvDupe2NotifyPaste]\t Player: "..Player:Nick().." Pasted, "..#Queue.SortedEntities.." Entities and "..#Player.AdvDupe2.Constraints.." Constraints.")
+	end
 	
 	Queue.Current = 1
 	Queue.Name = Player.AdvDupe2.Name
@@ -1303,7 +1327,7 @@ function AdvDupe2.InitPastingQueue(Player, PositionOffset, AngleOffset, OrigPos,
 	Queue.Percent = 1/(#Queue.SortedEntities+#Queue.ConstraintList)
 	AdvDupe2.InitProgressBar(Player,"Queued:")
 	Player.AdvDupe2.Queued = true
-	if(!AdvDupe2.JobManager.PastingHook)then	
+	if(not AdvDupe2.JobManager.PastingHook)then	
 		hook.Add("Tick", "AdvDupe2_Spawning", ErrorCatchSpawning)
 		AdvDupe2.JobManager.PastingHook = true
 		AdvDupe2.JobManager.CurrentPlayer = 1
@@ -1311,7 +1335,7 @@ function AdvDupe2.InitPastingQueue(Player, PositionOffset, AngleOffset, OrigPos,
 
 	undo.Create("AdvDupe2_"..Player:UniqueID())
 		undo.SetPlayer(Player)
-		undo.SetCustomUndoText(string.format("Undone Advanced Duplication \"%s\"",Player.AdvDupe2.Name))
+		undo.SetCustomUndoText(string.format("Undone Advanced Duplication \"%s\"",Player.AdvDupe2.Name or ""))
 		undo.AddFunction(RemoveSpawnedEntities, i)
 	undo.Finish()
 end

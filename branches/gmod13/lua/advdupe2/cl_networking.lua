@@ -11,100 +11,95 @@
 include "nullesc.lua"
 
 AdvDupe2.NetFile = ""
+local AutoSave = false
 
 local function CheckFileNameCl(path)
-	if file.Exists(path, "DATA") then
-		path = string.sub(path, 1, #path-4)
+	if file.Exists(path..".txt", "DATA") then
 		for i = 1, AdvDupe2.FileRenameTryLimit do
 			if not file.Exists(path.."_"..i..".txt", "DATA") then
-				return path.."_"..i..".txt"
+				return path.."_"..i
 			end
 		end
 	end
-
 	return path
 end
 
 --[[
-	Name: AdvDupe2_RecieveFile
-	Desc: Recieve file data from the server when downloading to the client
-	Params: usermessage
+	Name: AdvDupe2_ReceiveFile
+	Desc: Receive file data from the server when downloading to the client
+	Params: 
 	Returns:
 ]]
-local function AdvDupe2_RecieveFile(um)
-	local status = um:ReadShort()
-
+local function AdvDupe2_ReceiveFile(len, ply, len2)
+	local status = net.ReadInt(8)
+	
 	if(status==1)then AdvDupe2.NetFile = "" end
-	AdvDupe2.NetFile=AdvDupe2.NetFile..um:ReadString()
+	AdvDupe2.NetFile=AdvDupe2.NetFile..net.ReadString()
 
 	if(status==2)then
-		local path = CheckFileNameCl(AdvDupe2.SavePath)
-
-		file.Write(path, AdvDupe2.Null.invesc(AdvDupe2.NetFile))
+		local path = ""
+		if(AutoSave)then
+			if(LocalPlayer():GetInfo("advdupe2_auto_save_overwrite")~="1")then
+				path = CheckFileNameCl(AdvDupe2.AutoSavePath)
+			end
+		else
+			path = CheckFileNameCl(AdvDupe2.SavePath)
+		end
+		file.Write(path..".txt", AdvDupe2.Null.invesc(AdvDupe2.NetFile))
 		
 		local filename = string.Explode("/", path)
-		filename = string.sub(filename[#filename], 1, -5)
-
-		AdvDupe2.FileBrowser:AddFileToClient(filename, AdvDupe2.SaveNode, true)
+		filename = filename[#filename]
+		if(AutoSave)then
+			local add = true
+			for i=1, #panel.AutoSaveNode.Files do
+				if(name==panel.AutoSaveNode.Files[i])then
+					add=false
+					break
+				end
+			end
+			if(add)then
+				AdvDupe2.FileBrowser.AutoSaveNode:AddFile(filename)
+				AdvDupe2.FileBrowser.Browser.pnlCanvas:Sort(AdvDupe2.FileBrowser.AutoSaveNode)
+			end
+		else
+			AdvDupe2.FileBrowser.Browser.pnlCanvas.ActionNode:AddFile(filename)
+			AdvDupe2.FileBrowser.Browser.pnlCanvas:Sort(AdvDupe2.FileBrowser.Browser.pnlCanvas.ActionNode)
+		end
 		AdvDupe2.NetFile = ""
-		AdvDupe2.Notify("File successfully downloaded!",NOTIFY_GENERIC,5)
+		AdvDupe2.Notify("File successfully saved!",NOTIFY_GENERIC,5)
 		return
 	end
 
 end
-usermessage.Hook("AdvDupe2_RecieveFile", AdvDupe2_RecieveFile)
+net.Receive("AdvDupe2_ReceiveFile", AdvDupe2_ReceiveFile)
 
-function AdvDupe2.RemoveProgressBar()
-	if !AdvDupe2 then AdvDupe2={} end
-	AdvDupe2.ProgressBar = {}
-end
-
-local escseqnl = { "nwl", "newl", "nwli", "nline" }
-local escseqquo = { "quo", "qte", "qwo", "quote" }
 --[[
 	Name: InitializeUpload
 	Desc: When the client clicks upload, prepares to send data to the server
 	Params: File Data, Path to save
 	Returns:
 ]]			
-function AdvDupe2.InitializeUpload(ReadPath, ReadArea, SavePath, SaveArea, ParentID)
+function AdvDupe2.InitializeUpload(ReadPath, ReadArea)
 	if(ReadArea==0)then
 		ReadPath = AdvDupe2.DataFolder.."/"..ReadPath..".txt"
 	elseif(ReadArea==1)then
-		ReadPath = AdvDupe2.DataFolder.."/=Public=/"..ReadPath..".txt"
+		ReadPath = AdvDupe2.DataFolder.."/-Public-/"..ReadPath..".txt"
 	else
 		ReadPath = "adv_duplicator/"..ReadPath..".txt"
 	end
 	
-	if(!file.Exists(ReadPath, "DATA"))then return end
-	local nwl 
-	local quo 
-	local data = AdvDupe2.Null.esc(file.Read(ReadPath))
-					
-	for k = 1, #escseqnl do		
-		if(string.find(data, escseqnl[k]))then continue end
-		nwl = escseqnl[k]
-		data = string.gsub(data, "\10", escseqnl[k])
-		break
-	end
-		
-	for k = 1, #escseqquo do
-		if(string.find(data, escseqquo[k]))then continue end
-		quo = escseqquo[k]
-		data = string.gsub(data, [["]], escseqquo[k])
-		break
-	end
-		
-	AdvDupe2.File = data
+	if(not file.Exists(ReadPath, "DATA"))then AdvDupe2.Notify("File does not exist", NOTIFY_ERROR) return end
+	
+	AdvDupe2.File = AdvDupe2.Null.esc(file.Read(ReadPath))
 	AdvDupe2.LastPos = 0
-	AdvDupe2.Length = string.len(data)
-	AdvDupe2.InitProgressBar("Uploading:")
+	AdvDupe2.Length = string.len(AdvDupe2.File)
+	AdvDupe2.InitProgressBar("Opening:")
+	
+	local name = string.Explode("/", ReadPath)
+	name = name[#name]
+	name = string.sub(name, 1, #name-4)
 
-	RunConsoleCommand("AdvDupe2_InitRecieveFile", SavePath, SaveArea, nwl, quo, ParentID)
-end
-
-function AdvDupe2.UpdateProgressBar(percent)
-	AdvDupe2.ProgressBar.Percent = percent
+	RunConsoleCommand("AdvDupe2_InitReceiveFile", name)
 end
 
 --[[
@@ -113,29 +108,31 @@ end
 	Params: end of file
 	Returns:
 ]]
-local function SendFileToServer(eof, chunks)
-	
-	for i=1,chunks do
-		if(AdvDupe2.LastPos+eof>AdvDupe2.Length)then
-			eof = AdvDupe2.Length
-		end
-		
-		local data = string.sub(AdvDupe2.File, AdvDupe2.LastPos, AdvDupe2.LastPos+eof)
-		AdvDupe2.LastPos = AdvDupe2.LastPos+eof+1
-		AdvDupe2.UpdateProgressBar(math.floor((AdvDupe2.LastPos/AdvDupe2.Length)*100))
-		local status = 0
-		if(AdvDupe2.LastPos>=AdvDupe2.Length)then
-			status=1
-			AdvDupe2.RemoveProgressBar()
-			RunConsoleCommand("AdvDupe2_RecieveFile", status, data)
-			break
-		end
-		RunConsoleCommand("AdvDupe2_RecieveFile", status, data)
+local function SendFileToServer(eof)
+
+	if(AdvDupe2.LastPos+eof>AdvDupe2.Length)then
+		eof = AdvDupe2.Length
 	end
+
+	local data = string.sub(AdvDupe2.File, AdvDupe2.LastPos, AdvDupe2.LastPos+eof)
+
+	AdvDupe2.LastPos = AdvDupe2.LastPos+eof+1
+	AdvDupe2.ProgressBar.Percent = math.floor((AdvDupe2.LastPos/AdvDupe2.Length)*100)
+	local status = false
+	if(AdvDupe2.LastPos>=AdvDupe2.Length)then
+		status=true
+		AdvDupe2.RemoveProgressBar()
+	end
+
+	net.Start("AdvDupe2_ReceiveFile")
+		net.WriteBit(status)
+		net.WriteString(data)
+	net.SendToServer()
+	
 end
 
-usermessage.Hook("AdvDupe2_RecieveNextStep",function(um)
-	SendFileToServer(um:ReadShort(), um:ReadShort())
+usermessage.Hook("AdvDupe2_ReceiveNextStep",function(um)
+	SendFileToServer(um:ReadShort())
 end)
 
 usermessage.Hook("AdvDupe2_UploadRejected",function(um)
@@ -143,4 +140,8 @@ usermessage.Hook("AdvDupe2_UploadRejected",function(um)
 	AdvDupe2.LastPos = nil
 	AdvDupe2.Length = nil
 	if(um:ReadBool())then AdvDupe2.RemoveProgressBar() end
+end)
+
+concommand.Add("AdvDupe2_SaveType", function(ply, cmd, args)
+	AutoSave = args[1]=="1"
 end)

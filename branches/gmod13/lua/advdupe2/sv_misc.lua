@@ -76,12 +76,12 @@ timer.Simple(0, function()
 						local a,b = entity:GetClass():match("^(.-)_(.+)")
 
 						if b == "magnet" then
-							timer.Simple( 0, FixMagnet, entity )
+							timer.Simple( 0, function() FixMagnet(entity) end)
 						end
 						
 						if a == "phys" then
 							if(b=="constraintsystem")then return end
-							timer.Simple( 0, SavePositions, entity )
+							timer.Simple( 0, function() SavePositions(entity) end)
 						end
 
 					end )

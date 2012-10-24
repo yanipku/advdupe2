@@ -45,6 +45,30 @@ end
 //=========	   Server To Client	    =========
 //===========================================
 
+--[[
+	Name: EstablishNetwork
+	Desc: Add user to the queue and set up to begin data sending
+	Params: Player, File data
+	Returns:
+]]
+function AdvDupe2.EstablishNetwork(ply, file)
+	if(not IsValid(ply))then return end
+	local id = ply:UniqueID()
+	ply.AdvDupe2.Downloading = true
+	AdvDupe2.Network.Networks[id] = {Player = ply, File=AdvDupe2.Null.esc(file), Length = #file, LastPos=1}
+	
+	local Cur_Time = CurTime()
+	local time = AdvDupe2.Network.SvStaggerSendRate - Cur_Time
+
+	if(time > 0)then
+		AdvDupe2.Network.SvStaggerSendRate = Cur_Time + tonumber(GetConVarString("AdvDupe2_ServerSendRate")) + time
+		timer.Simple(time, function() AdvDupe2_SendFile(id) end)
+	else
+		AdvDupe2.Network.SvStaggerSendRate = Cur_Time + tonumber(GetConVarString("AdvDupe2_ServerSendRate"))
+		AdvDupe2_SendFile(id)
+	end
+	
+end
 
 --[[
 	Name: AdvDupe2_SendFile
@@ -53,132 +77,158 @@ end
 	Returns:
 ]]
 function AdvDupe2_SendFile(ID)
-	
 	local Net = AdvDupe2.Network.Networks[ID]
-	local Network = AdvDupe2.Network
 	
-	if(!IsValid(Net.Player))then
+	if(not IsValid(Net.Player))then
 		AdvDupe2.Network.Networks[ID] = nil
 		return
 	end
 	
 	local status = 0
-	
 	local data = ""
-	for i=1,tonumber(GetConVarString("AdvDupe2_ServerDataChunks")) do
-		status = 0
-		if(Net.LastPos==1)then status = 1 AdvDupe2.InitProgressBar(Net.Player,"Downloading:") end
-		data = string.sub(Net.File, Net.LastPos, Net.LastPos+tonumber(GetConVarString("AdvDupe2_MaxDownloadBytes")))
 
-		Net.LastPos=Net.LastPos+tonumber(GetConVarString("AdvDupe2_MaxDownloadBytes"))+1
-		if(Net.LastPos>=Net.Length)then status = 2 end
+	if(Net.LastPos==1)then status = 1 AdvDupe2.InitProgressBar(Net.Player,"Saving:") end
+	data = string.sub(Net.File, Net.LastPos, Net.LastPos+tonumber(GetConVarString("AdvDupe2_MaxDownloadBytes2")))
 
-		umsg.Start("AdvDupe2_RecieveFile", Net.Player)
-			umsg.Short(status)
-			umsg.String(data)
-		umsg.End()
-		
-		if(status==2)then break end
-	end
+	Net.LastPos=Net.LastPos+tonumber(GetConVarString("AdvDupe2_MaxDownloadBytes2"))+1
+
+	if(Net.LastPos>=Net.Length)then status = 2 end
+
+	net.Start("AdvDupe2_ReceiveFile")
+		net.WriteInt(status, 8)
+		net.WriteString(data)
+	net.Send(Net.Player)
 	
 	AdvDupe2.UpdateProgressBar(Net.Player, math.floor((Net.LastPos/Net.Length)*100))
 	
 	if(Net.LastPos>=Net.Length)then
 		Net.Player.AdvDupe2.Downloading = false
 		AdvDupe2.RemoveProgressBar(Net.Player)
-		if(Net.Player.AdvDupe2.Entities && !Net.Player.AdvDupe2.GhostEntities)then
-			AdvDupe2.StartGhosting(Net.Player)
-		end
-		
 		AdvDupe2.Network.Networks[ID] = nil
 		return 
 	end
 	
 	local Cur_Time = CurTime()
-	local time = Network.SvStaggerSendRate - Cur_Time
-	
-	timer.Simple(time, AdvDupe2_SendFile, ID)
-	
-	if(time > 0)then
-		AdvDupe2.Network.SvStaggerSendRate = Cur_Time + tonumber(GetConVarString("AdvDupe2_ServerSendRate")) + time
-	else
-		AdvDupe2.Network.SvStaggerSendRate = Cur_Time + tonumber(GetConVarString("AdvDupe2_ServerSendRate"))
-	end
-	
-end
-
-
---[[
-	Name: EstablishNetwork
-	Desc: Add user to the queue and set up to begin data sending
-	Params: Player, File data
-	Returns:
-]]
-function AdvDupe2.EstablishNetwork(ply, file)
-	if(!IsValid(ply))then return end
-	
-	if(!tobool(GetConVarString("AdvDupe2_AllowDownloading")))then
-		AdvDupe2.Notify(ply,"Downloading is not allowed!",NOTIFY_ERROR,5)
-		return
-	end
-
-	file = AdvDupe2.Null.esc(file)
-
-	local id = ply:UniqueID()
-	ply.AdvDupe2.Downloading = true
-	AdvDupe2.Network.Networks[id] = {Player = ply, File=file, Length = #file, LastPos=1}
-	
-	local Cur_Time = CurTime()
 	local time = AdvDupe2.Network.SvStaggerSendRate - Cur_Time
-
+	
+	timer.Simple(time, function() AdvDupe2_SendFile(ID) end)
+	
 	if(time > 0)then
 		AdvDupe2.Network.SvStaggerSendRate = Cur_Time + tonumber(GetConVarString("AdvDupe2_ServerSendRate")) + time
-		timer.Simple(time, AdvDupe2_SendFile, id)
 	else
 		AdvDupe2.Network.SvStaggerSendRate = Cur_Time + tonumber(GetConVarString("AdvDupe2_ServerSendRate"))
-		AdvDupe2_SendFile(id)
 	end
 	
 end
 
-function AdvDupe2.RecieveNextStep(id)
-	if(!IsValid(AdvDupe2.Network.ClientNetworks[id].Player))then AdvDupe2.Network.ClientNetworks[id] = nil return end
-	umsg.Start("AdvDupe2_RecieveNextStep", AdvDupe2.Network.ClientNetworks[id].Player)
-		umsg.Short(tonumber(GetConVarString("AdvDupe2_MaxUploadBytes")))
-		umsg.Short(tonumber(GetConVarString("AdvDupe2_ClientDataChunks")))
-	umsg.End()
-end
 
 //===========================================
 //=========	   Client To Server	    =========
 //===========================================
 
-
-local function GetPlayersFolder(ply)
-	local path
-	if SinglePlayer() then
-		path = string.format("%s", AdvDupe2.DataFolder)
-	else
-		path = string.format("%s/%s", AdvDupe2.DataFolder, ply:SteamID():gsub(":","_"))
+function AdvDupe2.LoadDupe(ply,success,dupe,info,moreinfo)
+	if(not IsValid(ply))then return end
+			
+	if not success then 
+		AdvDupe2.Notify(ply,"Could not open "..dupe,NOTIFY_ERROR)
+		return
 	end
-	return path
+			
+	if(not game.SinglePlayer())then
+		if(tonumber(GetConVarString("AdvDupe2_MaxConstraints"))~=0 and #dupe["Constraints"]>tonumber(GetConVarString("AdvDupe2_MaxConstraints")))then
+			AdvDupe2.Notify(ply,"Amount of constraints is greater than "..GetConVarString("AdvDupe2_MaxConstraints"),NOTIFY_ERROR)
+			return false
+		end
+	end
+
+	ply.AdvDupe2.Entities = {}
+	ply.AdvDupe2.Constraints = {}
+	ply.AdvDupe2.HeadEnt={}
+	local time
+	local desc
+	local date
+	local creator
+
+	if(info.ad1)then
+		time = moreinfo["Time"] or ""
+		desc = info["Description"] or ""
+		date = info["Date"] or ""
+		creator = info["Creator"] or ""
+
+		ply.AdvDupe2.HeadEnt.Index = tonumber(moreinfo.Head)
+		local spx,spy,spz = moreinfo.StartPos:match("^(.-),(.-),(.+)$")
+		ply.AdvDupe2.HeadEnt.Pos = Vector(tonumber(spx) or 0, tonumber(spy) or 0, tonumber(spz) or 0)
+		local z = (tonumber(moreinfo.HoldPos:match("^.-,.-,(.+)$")) or 0)*-1
+		ply.AdvDupe2.HeadEnt.Z = z
+		ply.AdvDupe2.HeadEnt.Pos.Z = ply.AdvDupe2.HeadEnt.Pos.Z + z
+		local Pos
+		local Ang
+		for k,v in pairs(dupe["Entities"])do
+			Pos = nil
+			Ang = nil
+			if(v.SavedParentIdx)then 
+				if(not v.BuildDupeInfo)then v.BuildDupeInfo = {} end
+				v.BuildDupeInfo.DupeParentID = v.SavedParentIdx
+				Pos = v.LocalPos*1
+				Ang = v.LocalAngle*1
+			end
+			for i,p in pairs(v.PhysicsObjects)do
+				p.Pos = Pos or (p.LocalPos*1)
+				p.Pos.Z = p.Pos.Z - z
+				p.Angle = Ang or (p.LocalAngle*1)
+				p.LocalPos = nil
+				p.LocalAngle = nil
+			end
+			v.LocalPos = nil
+			v.LocalAngle = nil
+		end
+
+		ply.AdvDupe2.Entities = dupe["Entities"]
+		ply.AdvDupe2.Constraints = dupe["Constraints"]
+		
+	else
+		time = info["time"]
+		desc = dupe["Description"]
+		date = info["date"]
+		creator = info["name"]
+		
+		ply.AdvDupe2.Entities = dupe["Entities"]
+		ply.AdvDupe2.Constraints = dupe["Constraints"]
+		ply.AdvDupe2.HeadEnt = dupe["HeadEnt"]
+	end
+	
+	net.Start("AdvDupe2_SetDupeInfo")
+		net.WriteString(ply.AdvDupe2.Name)
+		net.WriteString(creator)
+		net.WriteString(date)
+		net.WriteString(time)
+		net.WriteString(string.NiceSize(tonumber(info.size) or 0))
+		net.WriteString(desc or "")
+		net.WriteString(table.Count(ply.AdvDupe2.Entities))
+		net.WriteString(#ply.AdvDupe2.Constraints)
+	net.Send(ply)
+	
+	AdvDupe2.ResetOffsets(ply, true)
+	AdvDupe2.SendGhosts(ply)
+end
+
+function AdvDupe2.ReceiveNextStep(id)
+	if(not IsValid(AdvDupe2.Network.ClientNetworks[id].Player))then AdvDupe2.Network.ClientNetworks[id] = nil return end
+	umsg.Start("AdvDupe2_ReceiveNextStep", AdvDupe2.Network.ClientNetworks[id].Player)
+		umsg.Short(tonumber(GetConVarString("AdvDupe2_MaxUploadBytes2")))
+	umsg.End()
 end
 
 --[[
-	Name: AdvDupe2_InitRecieveFile
+	Name: AdvDupe2_InitReceiveFile
 	Desc: Start the file recieving process and send the servers settings to the client
 	Params: concommand
 	Returns:
 ]]
-local function AdvDupe2_InitRecieveFile( ply, cmd, args )
-	if(!IsValid(ply))then return end
-	if(!tobool(GetConVarString("AdvDupe2_AllowUploading")))then
-		umsg.Start("AdvDupe2_UploadRejected", ply)
-			umsg.Bool(true)
-		umsg.End()
-		AdvDupe2.Notify(ply, "Uploading is not allowed!",NOTIFY_ERROR,5)
-		return
-	elseif(ply.AdvDupe2.Pasting || ply.AdvDupe2.Downloading)then
+local function AdvDupe2_InitReceiveFile( ply, cmd, args )
+	if(not IsValid(ply))then return end
+
+	if(ply.AdvDupe2.Pasting or ply.AdvDupe2.Downloading)then
 		umsg.Start("AdvDupe2_UploadRejected", ply)
 			umsg.Bool(false)
 		umsg.End()
@@ -186,45 +236,28 @@ local function AdvDupe2_InitRecieveFile( ply, cmd, args )
 		return
 	end
 	
-	local path = args[1]
-	local area = tonumber(args[2])
-	
-	if(area==0)then
-		path = GetPlayersFolder(ply).."/"..path
-	elseif(area==1)then
-		if(!tobool(GetConVarString("AdvDupe2_AllowPublicFolder")))then
-			umsg.Start("AdvDupe2_UploadRejected", ply)
-				umsg.Bool(true)
-			umsg.End()
-			AdvDupe2.Notify(ply,"Public Folder is disabled."..dupe,NOTIFY_ERROR)
-			return
-		end
-		path = AdvDupe2.DataFolder.."/=Public=/"..path
-	else
-		path = "adv_duplicator/"..ply:SteamIDSafe().."/"..path
-	end
-	
 	local id = ply:UniqueID()
 	if(AdvDupe2.Network.ClientNetworks[id])then return false end
 	ply.AdvDupe2.Downloading = true
 	ply.AdvDupe2.Uploading = true
+	ply.AdvDupe2.Name = args[1]
 	
-	AdvDupe2.Network.ClientNetworks[id] = {Player = ply, Data = "", Size = 0, Name = path, SubN = args[3], SubQ = args[4], ParentID = tonumber(args[5]), Parts = 0}
+	AdvDupe2.Network.ClientNetworks[id] = {Player = ply, Data = "", Size = 0}
 	
 	local Cur_Time = CurTime()
 	local time = AdvDupe2.Network.ClStaggerSendRate - Cur_Time
 	if(time > 0)then
 		AdvDupe2.Network.ClStaggerSendRate = Cur_Time + tonumber(GetConVarString("AdvDupe2_ClientSendRate")) + time
 		AdvDupe2.Network.ClientNetworks[id].NextSend = time + Cur_Time
-		timer.Simple(time, AdvDupe2.RecieveNextStep, id)
+		timer.Simple(time, function() AdvDupe2.ReceiveNextStep(id) end)
 	else
 		AdvDupe2.Network.ClStaggerSendRate = Cur_Time + tonumber(GetConVarString("AdvDupe2_ClientSendRate"))
 		AdvDupe2.Network.ClientNetworks[id].NextSend = Cur_Time
-		AdvDupe2.RecieveNextStep(id)
+		AdvDupe2.ReceiveNextStep(id)
 	end
 
 end
-concommand.Add("AdvDupe2_InitRecieveFile", AdvDupe2_InitRecieveFile)
+concommand.Add("AdvDupe2_InitReceiveFile", AdvDupe2_InitReceiveFile)
 
 
 local function AdvDupe2_SetNextResponse(id)
@@ -234,29 +267,29 @@ local function AdvDupe2_SetNextResponse(id)
 	if(time > 0)then
 		AdvDupe2.Network.ClStaggerSendRate = Cur_Time + tonumber(GetConVarString("AdvDupe2_ClientSendRate")) + time
 		AdvDupe2.Network.ClientNetworks[id].NextSend = time + Cur_Time
-		timer.Simple(time, AdvDupe2.RecieveNextStep, id)
+		timer.Simple(time, function() AdvDupe2.ReceiveNextStep(id) end)
 	else
 		AdvDupe2.Network.ClStaggerSendRate = Cur_Time + tonumber(GetConVarString("AdvDupe2_ClientSendRate"))
 		AdvDupe2.Network.ClientNetworks[id].NextSend = Cur_Time
-		AdvDupe2.RecieveNextStep(id)
+		AdvDupe2.ReceiveNextStep(id)
 	end
 
 end
 
 --[[
-	Name: AdvDupe2_RecieveFile
-	Desc: Recieve file data from the client to save on the server
+	Name: AdvDupe2_ReceiveFile
+	Desc: Receive file data from the client to save on the server
 	Params: concommand
 	Returns:
 ]]
-local function AdvDupe2_RecieveFile(ply, cmd, args)
-	if(!IsValid(ply))then return end
-	
+local function AdvDupe2_ReceiveFile(len, ply, len2)
+	if(not IsValid(ply))then return end
+
 	local id = ply:UniqueID()
-	if(!AdvDupe2.Network.ClientNetworks[id])then return end
+	if(not AdvDupe2.Network.ClientNetworks[id])then return end
 	local Net = AdvDupe2.Network.ClientNetworks[id]
 	
-	//Someone tried to mess with upload concommands
+	//Someone tried to mess with upload commands
 	if(Net.NextSend - CurTime()>0)then
 		AdvDupe2.Network.ClientNetworks[id]=nil
 		ply.AdvDupe2.Downloading = false
@@ -266,45 +299,24 @@ local function AdvDupe2_RecieveFile(ply, cmd, args)
 			umsg.Bool(true)
 		umsg.End()
 		AdvDupe2.Notify(ply,"Upload Rejected!",NOTIFY_GENERIC,5)
+		return
 	end
 
-	local data = args[2]
-	
-	Net.Data = Net.Data..data
-	Net.Parts = Net.Parts + 1
-	
-	if(tonumber(args[1])!=0)then
-		Net.Data = string.gsub(Net.Data, Net.SubN, "\10")
-		Net.Data = string.gsub(Net.Data, Net.SubQ, [["]])
-		Net.Name = CheckFileNameSv(Net.Name)
-		local filename = string.Explode("/", Net.Name)
-		Net.FileName = string.sub(filename[#filename], 1, -5)
+	local status = net.ReadBit()
+	Net.Data = Net.Data..net.ReadString()
 
-		file.Write(Net.Name, AdvDupe2.Null.invesc(Net.Data))
-
-		umsg.Start("AdvDupe2_AddFile",ply)
-			umsg.String(Net.FileName)
-			umsg.Short(Net.ParentID)
-			umsg.Bool(true)
-		umsg.End()
-		
+	if(status==1)then
+		AdvDupe2.Decode(AdvDupe2.Null.invesc(Net.Data), function(success,dupe,info,moreinfo) AdvDupe2.LoadDupe(ply, success, dupe, info, moreinfo) end)
 		AdvDupe2.Network.ClientNetworks[id]=nil
 		ply.AdvDupe2.Downloading = false
 		ply.AdvDupe2.Uploading = false
-		if(ply.AdvDupe2.Entities && !ply.AdvDupe2.GhostEntities)then
-			AdvDupe2.StartGhosting(ply)
-		end
-		
+					
 		umsg.Start("AdvDupe2_UploadRejected", ply)
 			umsg.Bool(false)
 		umsg.End()
-		AdvDupe2.Notify(ply,"File successfully uploaded!",NOTIFY_GENERIC,5)
 		return
 	end
 	
-	if(Net.Parts == tonumber(GetConVarString("AdvDupe2_ClientDataChunks")))then
-		Net.Parts = 0
-		AdvDupe2_SetNextResponse(id)
-	end
+	AdvDupe2_SetNextResponse(id)
 end
-concommand.Add("AdvDupe2_RecieveFile", AdvDupe2_RecieveFile)
+net.Receive("AdvDupe2_ReceiveFile", AdvDupe2_ReceiveFile)
