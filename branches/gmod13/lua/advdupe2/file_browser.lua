@@ -8,7 +8,6 @@
 	Version: 1.0
 ]]
 
-local panel
 local History = {}
 local Narrow = {}
 
@@ -219,7 +218,7 @@ local function AddNewFolder(node)
 	
 	node.Control:SetSelected(Folder)
 	if(Controller.Expanded)then
-		panel:Slide(false)
+		AdvDupe2.FileBrowser:Slide(false)
 	end
 end
 
@@ -329,8 +328,8 @@ local function MoveFileClient(node)
 	node2.Control:RemoveNode(node2)
 	node2 = node:AddFile(name2)
 	node2.Control:Sort(node)
-	panel:Slide(false)
-	panel.Info:SetVisible(false)
+	AdvDupe2.FileBrowser:Slide(false)
+	AdvDupe2.FileBrowser.Info:SetVisible(false)
 end
 
 local function DeleteFilesInFolders(path)
@@ -363,15 +362,15 @@ local function SearchNodes(node, name)
 end
 
 local function Search(node, name)
-	panel.Search = vgui.Create("advdupe2_browser_panel", panel)
-	panel.Search:SetPos(panel.Browser:GetPos())
-	panel.Search:SetSize(panel.Browser:GetSize())
-	panel.Search.pnlCanvas.Search = true
-	panel.Browser:SetVisible(false)
+	AdvDupe2.FileBrowser.Search = vgui.Create("advdupe2_browser_panel", AdvDupe2.FileBrowser)
+	AdvDupe2.FileBrowser.Search:SetPos(AdvDupe2.FileBrowser.Browser:GetPos())
+	AdvDupe2.FileBrowser.Search:SetSize(AdvDupe2.FileBrowser.Browser:GetSize())
+	AdvDupe2.FileBrowser.Search.pnlCanvas.Search = true
+	AdvDupe2.FileBrowser.Browser:SetVisible(false)
 	local Files = SearchNodes(node, name)
 	table.sort(Files, function(a, b) return a.Label:GetText() < b.Label:GetText() end)
 	for k,v in pairs(Files)do
-		panel.Search.pnlCanvas:AddFile(v.Label:GetText()).Ref = v
+		AdvDupe2.FileBrowser.Search.pnlCanvas:AddFile(v.Label:GetText()).Ref = v
 	end
 end
 
@@ -416,7 +415,7 @@ function BROWSER:DoNodeRightClick(node)
 											parent.FileName:OnMousePressed()
 											parent.FileName:RequestFocus()
 											parent.Expanding=true
-											panel:Slide(true)
+											AdvDupe2.FileBrowser:Slide(true)
 											parent.Submit.DoClick = function()
 																		local name = parent.FileName:GetValue()
 																		if(name=="")then
@@ -428,7 +427,7 @@ function BROWSER:DoNodeRightClick(node)
 																		end 
 																		AddHistory(name)
 																		RenameFileCl(node, name)
-																		panel:Slide(false)
+																		AdvDupe2.FileBrowser:Slide(false)
 																	end
 											parent.FileName.OnEnter = parent.Submit.DoClick
 										end)
@@ -440,7 +439,7 @@ function BROWSER:DoNodeRightClick(node)
 												parent.Info:SetText("Select the folder you want to move \nthe File to.")
 												parent.Info:SizeToContents()
 												parent.Info:SetVisible(true)
-												panel:Slide(true)
+												AdvDupe2.FileBrowser:Slide(true)
 												node.Control.ActionNode = node
 												parent.Submit.DoClick = function() MoveFileClient(node.Control.m_pSelectedItem) end
 											end)
@@ -456,7 +455,7 @@ function BROWSER:DoNodeRightClick(node)
 												end
 												parent.Info:SizeToContents()
 												parent.Info:SetVisible(true)
-												panel:Slide(true)
+												AdvDupe2.FileBrowser:Slide(true)
 												parent.Submit.DoClick = function()
 																			local path, area = GetNodePath(node)
 																			if(area==1)then path = "-Public-/"..path end
@@ -467,7 +466,7 @@ function BROWSER:DoNodeRightClick(node)
 																			end
 																			node.Control:RemoveNode(node)
 																			file.Delete(path)
-																			panel:Slide(false)
+																			AdvDupe2.FileBrowser:Slide(false)
 																		end
 											end)
 		end
@@ -488,7 +487,7 @@ function BROWSER:DoNodeRightClick(node)
 										parent.FileName:RequestFocus()
 										node.Control.ActionNode = node
 										parent.Expanding=true
-										panel:Slide(true)
+										AdvDupe2.FileBrowser:Slide(true)
 										parent.Submit.DoClick = function()
 																	local name = parent.FileName:GetValue()
 																	if(name=="" or name=="File_Name...")then
@@ -507,7 +506,7 @@ function BROWSER:DoNodeRightClick(node)
 																	else
 																		RunConsoleCommand("AdvDupe2_SaveFile", name)
 																	end
-																	panel:Slide(false)
+																	AdvDupe2.FileBrowser:Slide(false)
 																end
 										parent.FileName.OnEnter = function()
 																	parent.FileName:KillFocus()
@@ -532,7 +531,7 @@ function BROWSER:DoNodeRightClick(node)
 											parent.FileName:OnMousePressed()
 											parent.FileName:RequestFocus()
 											parent.Expanding=true
-											panel:Slide(true)
+											AdvDupe2.FileBrowser:Slide(true)
 											parent.Submit.DoClick = function() AddNewFolder(node) end
 											parent.FileName.OnEnter = parent.Submit.DoClick
 										end)
@@ -549,7 +548,7 @@ function BROWSER:DoNodeRightClick(node)
 										parent.FileName:OnMousePressed()
 										parent.FileName:RequestFocus()
 										parent.Expanding=true
-										panel:Slide(true)
+										AdvDupe2.FileBrowser:Slide(true)
 										parent.Submit.DoClick = function() 
 																	Search(node, string.lower(parent.FileName:GetValue()))
 																	AddHistory(parent.FileName:GetValue())
@@ -563,7 +562,7 @@ function BROWSER:DoNodeRightClick(node)
 																								parent.Search:Remove()
 																								parent.Search = nil
 																								parent.Browser:SetVisible(true)
-																								panel:Slide(false)
+																								AdvDupe2.FileBrowser:Slide(false)
 																								parent.Cancel:SetVisible(true)
 																							end
 																	parent.Cancel:SetVisible(false)
@@ -583,7 +582,7 @@ function BROWSER:DoNodeRightClick(node)
 											end
 											parent.Info:SizeToContents()
 											parent.Info:SetVisible(true)
-											panel:Slide(true)
+											AdvDupe2.FileBrowser:Slide(true)
 											parent.Submit.DoClick = function()
 																		local path, area = GetNodePath(node)
 																		if(area==1)then path = "-Public-/"..path end
@@ -594,7 +593,7 @@ function BROWSER:DoNodeRightClick(node)
 																		end
 																		node.Control:RemoveNode(node)
 																		DeleteFilesInFolders(path)
-																		panel:Slide(false)
+																		AdvDupe2.FileBrowser:Slide(false)
 																	end
 										end)
 		end
@@ -1022,31 +1021,31 @@ end
 local function UpdateClientFiles()
 
 	for i=1,2 do
-		if(panel.Browser.pnlCanvas.Folders[1])then
-			panel.Browser.pnlCanvas:RemoveNode(panel.Browser.pnlCanvas.Folders[1])
+		if(AdvDupe2.FileBrowser.Browser.pnlCanvas.Folders[1])then
+			AdvDupe2.FileBrowser.Browser.pnlCanvas:RemoveNode(AdvDupe2.FileBrowser.Browser.pnlCanvas.Folders[1])
 		end
 	end
 
-	PurgeFiles("advdupe2/", panel.Browser.pnlCanvas:AddFolder("-Advanced Duplicator 2-"))
+	PurgeFiles("advdupe2/", AdvDupe2.FileBrowser.Browser.pnlCanvas:AddFolder("-Advanced Duplicator 2-"))
 
-	PurgeFiles("adv_duplicator/", panel.Browser.pnlCanvas:AddFolder("-Advanced Duplicator 1-"))
+	PurgeFiles("adv_duplicator/", AdvDupe2.FileBrowser.Browser.pnlCanvas:AddFolder("-Advanced Duplicator 1-"))
 
-	if(panel.Browser.pnlCanvas.Folders[2])then
-		if(#panel.Browser.pnlCanvas.Folders[2].Folders == 0 and #panel.Browser.pnlCanvas.Folders[2].Files == 0)then
-			panel.Browser.pnlCanvas:RemoveNode(panel.Browser.pnlCanvas.Folders[2])
+	if(AdvDupe2.FileBrowser.Browser.pnlCanvas.Folders[2])then
+		if(#AdvDupe2.FileBrowser.Browser.pnlCanvas.Folders[2].Folders == 0 and #AdvDupe2.FileBrowser.Browser.pnlCanvas.Folders[2].Files == 0)then
+			AdvDupe2.FileBrowser.Browser.pnlCanvas:RemoveNode(AdvDupe2.FileBrowser.Browser.pnlCanvas.Folders[2])
 		end
 		
-		panel.Browser.pnlCanvas.Folders[1]:SetParent(nil)
-		panel.Browser.pnlCanvas.Folders[1]:SetParent(panel.Browser.pnlCanvas.ChildList)
-		panel.Browser.pnlCanvas.Folders[1].ChildList:SetParent(nil)
-		panel.Browser.pnlCanvas.Folders[1].ChildList:SetParent(panel.Browser.pnlCanvas.ChildList)
+		AdvDupe2.FileBrowser.Browser.pnlCanvas.Folders[1]:SetParent(nil)
+		AdvDupe2.FileBrowser.Browser.pnlCanvas.Folders[1]:SetParent(AdvDupe2.FileBrowser.Browser.pnlCanvas.ChildList)
+		AdvDupe2.FileBrowser.Browser.pnlCanvas.Folders[1].ChildList:SetParent(nil)
+		AdvDupe2.FileBrowser.Browser.pnlCanvas.Folders[1].ChildList:SetParent(AdvDupe2.FileBrowser.Browser.pnlCanvas.ChildList)
 	end
 
 end
 
 function PANEL:Init()
 
-	panel = self
+	AdvDupe2.FileBrowser = self
 	self.Expanded = false
 	self.Expanding = false
 	self.LastX = 0

@@ -1061,7 +1061,7 @@ if(CLIENT)then
 	CreateClientConVar("advdupe2_contr_spawner_key", -1, false, true)
 	CreateClientConVar("advdupe2_contr_spawner_undo_key", -1, false, true)
 	CreateClientConVar("advdupe2_contr_spawner_delay", 0, false, true)
-	CreateClientConVar("advdupe2_contr_spawner_undo_delay", 0, false, true)
+	CreateClientConVar("advdupe2_contr_spawner_undo_delay", 10, false, true)
 	CreateClientConVar("advdupe2_contr_spawner_disgrav", 0, false, true)
 	CreateClientConVar("advdupe2_contr_spawner_disdrag", 0, false, true)
 	CreateClientConVar("advdupe2_contr_spawner_addvel", 1, false, true)
@@ -1163,7 +1163,7 @@ if(CLIENT)then
 		NumSlider:SetText( "Area Copy Size:" )
 		NumSlider.Label:SetTextColor(Color(0,0,0,255))
 		NumSlider:SetMin( 0 )
-		NumSlider:SetMax( GetConVarNumber("AdvDupe2_MaxAreaCopySize") )
+		NumSlider:SetMax( GetConVarNumber("AdvDupe2_MaxAreaCopySize") or 2500 )
 		NumSlider:SetDecimals( 0 )
 		NumSlider:SetConVar( "advdupe2_area_copy_size" )
 		NumSlider:SetToolTip("Change the size of the area copy")
@@ -1352,7 +1352,7 @@ if(CLIENT)then
 				NumSlider:SetMin( 0 )
 				NumSlider:SetMax( 60 )
 			else
-				local min = tonumber(GetConVarString("AdvDupe2_MinContraptionUndoDelay")) or 0.1
+				local min = tonumber(GetConVarString("AdvDupe2_MinContraptionUndoDelay")) or 10
 				local max = tonumber(GetConVarString("AdvDupe2_MaxContraptionUndoDelay")) or 60
 				if(tonumber(LocalPlayer():GetInfo("advdupe2_contr_spawner_undo_delay")) < min)then
 					RunConsoleCommand("advdupe2_contr_spawner_undo_delay", tostring(min))

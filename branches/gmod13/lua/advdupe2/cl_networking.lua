@@ -51,8 +51,8 @@ local function AdvDupe2_ReceiveFile(len, ply, len2)
 		filename = filename[#filename]
 		if(AutoSave)then
 			local add = true
-			for i=1, #panel.AutoSaveNode.Files do
-				if(name==panel.AutoSaveNode.Files[i])then
+			for i=1, #AdvDupe2.FileBrowser.AutoSaveNode.Files do
+				if(name==AdvDupe2.FileBrowser.AutoSaveNode.Files[i])then
 					add=false
 					break
 				end
