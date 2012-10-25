@@ -56,5 +56,7 @@ You can see where your Area Auto Save location is and the size of it by clicking
 ===Map Save===
 You can preset props on a map and have them automatically loaded when the server starts. To save a map, you need to be an admin. Enter a file name for the file in the Map Save category and then click the Save button.
 
-To have a file automatically loaded set the `ConVar` `AdvDupe2_LoadMap` to a value of 1, 2, or 3. 0 is disable, 1 will preserve the frozen state of the props when they were copied, 2 will unfreeze all, 3 will freeze all. You will then need to set the file name of the file to automatically be loaded by setting the `ConVar` `AdvDupe2_MapFileName` For example `AdvDupe2_MapFileName` myfilename
+To have a file automatically loaded set the `ConVar` `AdvDupe2_LoadMap` to a value of 1, 2, or 3. 0 is disable, 1 will preserve the frozen state of the props when they were copied, 2 will unfreeze all, 3 will freeze all. You will then need to set the file name of the file to automatically be loaded by setting the `ConVar` `AdvDupe2_MapFileName` 
+
+For example `AdvDupe2_MapFileName` myfilename
 ----
