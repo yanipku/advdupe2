@@ -1,4 +1,4 @@
- * [HowToInstall]
+ * [HowToInstall How To Install]
  * [Controls Controls]
  * [ToolSettingsExplanation Tool Settings Explanation]
  * [ServerSettings Server Settings]
