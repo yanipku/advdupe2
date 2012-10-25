@@ -1,6 +1,7 @@
  * [HowToInstall How To Install]
  * [Controls Controls]
  * [ToolSettingsExplanation Tool Settings Explanation]
+ * [ToolExplanation How To Use the Tool]
  * [ServerSettings Server Settings]
  * [FAQ FAQ]
  * [Download Download Link]
