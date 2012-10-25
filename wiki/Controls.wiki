@@ -29,3 +29,8 @@ Reload(Default *R*), Sprint(Default *Shift*), Walk(Default *Alt*), Use(Default *
 
  * *R* - Creates an area auto saver.
 ----
+----
+==_*While Area Copy is active and holding E*_==
+
+ * *Mouse Wheel* - Modify Area Copy box size.
+----
