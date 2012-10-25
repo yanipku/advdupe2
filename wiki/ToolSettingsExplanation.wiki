@@ -25,3 +25,11 @@
  * *Disable drag for all spawned props* - Spawns contraptions without drag.
  * *Add spawner's velocity to contraption* - Spawns contraptions with added velocity from the contraption spawner.
 ----
+==_*Area Auto Save*_==
+ * *Copy Contraption Only* - Will not copy an area, only the prop that is clicked and everything constrained to it.(So if the prop moves across the map it will still be saved.)
+ * *Overwrite File* - Will overwrite the file name each time instead of creating a new file and appending a number.
+ * *Browse* - Browse to the directory from the file browser and choose where to save the auto save and what to name it.
+----
+==_*Map Save*_==
+ *File Name* - What to name the map save.
+----
