@@ -5,7 +5,7 @@ Next go to your addons folder located at, "C:/Program Files/Steam/steamapps/*USE
 http://i.imgur.com/CNv7i.png
 
 
-Once the SVN client is downloaded and the folder has been created; right click the 'AdvDupe2' folder and click "SVN Checkout...".
+Once the SVN client is downloaded and the folder has been created; right click the `AdvDupe2` folder and click "SVN Checkout...".
 
 http://i.imgur.com/6cw0E.png
 
