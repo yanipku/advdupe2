@@ -14,6 +14,7 @@
  * *`AdvDupe2_MaxContraptionSpawnDelay`* - (Default - 120) The maximum delay between how fast the contraption spawner can spawn something.
  * *`AdvDupe2_MinContraptionSpawnUndoDelay`* - (Default - 0.1) The minimum delay of how fast the contraption spawner will auto undo.
  * *`AdvDupe2_MaxContraptionSpawnUndoDelay`* - (Default - 60) The Maximum delay of how fast the contraption spawner will auto undo.
+ * *`AdvDupe2_AreaAutoSaveTime`* - (Defailt - 10) Minimum time in minutes that an area auto save can be.
  * *`AdvDupe2_MaxAreaCopySize`* - (Default - 2500) Max size of an area copy.
  * *`AdvDupe2_RemoveFilesOnDisconnect`* - (Default - false) Remove all of a player's files when they disconnect form the server.
  * *`AdvDupe2_FileModificationDelay`* - (Default - 5) The delay in seconds between file modifications(Opening, deleting, moving, renaming, saving).
@@ -23,3 +24,5 @@
  * *`AdvDupe2_MaxUploadBytes`* - (Default - 180) Amount of bytes to recieve per data chunk when a player is uploading.
  * *`AdvDupe2_ServerSendRate`* - (Default - 0.15) How quickly to send the data chunks to the player.
  * *`AdvDupe2_ClientSendRate`* - (Default - 0.15) How quickly to receive the data chunks from the player.
+ * *`AdvDupe2_LoadMap`* - (Default - 0) Set the server to automatically load a file. 0 = Disable, 1 = preserve frozen state, 2 = unfreeze all, 3 = freeze all
+ * *`AdvDupe2_MapFileName`* - (Default - "") The name of the file to automatically load. I.E. "mymapsave"
