@@ -21,6 +21,12 @@ Props that are inside the area box will be highlighted green.
 Once you're ready to copy, just right click. If you did not right click a prop, a head prop will be automatically selected for you.
 
 ----
+===Addition Copy===
+You can add a single prop at a time by holding Alt and Right Clicking a prop.
+----
+===Clear the Duplicator===
+You can clear what is copied in the duplicator by holding Alt and Shift and pressing Right Click.
+----
 ===Offsets===
  * *Change Height* - To change the height of a paste, hold down E and scroll the mouse or change the Height slider in the Offsets category.
  * *Change Yaw* - To change the yaw of a paste, hold down E and drag the mouse left and right or change the Yaw slider in the Offsets category.
