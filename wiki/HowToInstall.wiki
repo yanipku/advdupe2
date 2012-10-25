@@ -1,3 +1,12 @@
+==QUICK==
+Addon for Windows, Linux, Mac: http://advdupe2.googlecode.com/svn/trunk/AdvDupe2/
+
+Module for Windows only: http://advdupe2.googlecode.com/svn/trunk/lua/bin/gmsv_ad2filestream_win32.dll
+
+Paid hosting Windows that doesn't allow .dlls: http://advdupe2.googlecode.com/svn/branch/AdvDupe2/
+
+==Explained==
+
 First you will need an SVN client like [http://tortoisesvn.net/downloads.html Tortoise SVN].
 
 Next go to your addons folder located at, "C:/Program Files/Steam/steamapps/*USER NAME*/garrysmod/garrysmod/addons/", and create a folder called "AdvDupe2" without the quotes. (*NOTE:* 64-bit users will be Program Files(x86) and *USER NAME* is your steam user name).
