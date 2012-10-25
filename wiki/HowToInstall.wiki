@@ -14,7 +14,7 @@ A window will pop up and you will enter the URL of the SVN.
 
 For *standard users*, you will enter: http://advdupe2.googlecode.com/svn/trunk/AdvDupe2/
 
-For users with *paid hosting that do not allow .dlls* you will enter, http://advdupe2.googlecode.com/svn/branch/AdvDupe2/
+For users with *paid hosting that do not allow .dlls who use Windows* you will enter, http://advdupe2.googlecode.com/svn/branch/AdvDupe2/
 
 http://i.imgur.com/YU53g.png
 
