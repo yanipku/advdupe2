@@ -3,8 +3,6 @@ Addon for Windows, Linux, Mac: http://advdupe2.googlecode.com/svn/trunk/AdvDupe2
 
 Module for Windows only: http://advdupe2.googlecode.com/svn/trunk/lua/bin/gmsv_ad2filestream_win32.dll
 
-Paid hosting Windows that doesn't allow .dlls: http://advdupe2.googlecode.com/svn/branch/AdvDupe2/
-
 ==Explained==
 
 First you will need an SVN client like [http://tortoisesvn.net/downloads.html Tortoise SVN].
@@ -23,13 +21,11 @@ A window will pop up and you will enter the URL of the SVN.
 
 For *standard users*, you will enter: http://advdupe2.googlecode.com/svn/trunk/AdvDupe2/
 
-For users with *paid hosting that do not allow .dlls who use Windows* you will enter, http://advdupe2.googlecode.com/svn/branch/AdvDupe2/
-
 http://i.imgur.com/YU53g.png
 
 Once done, press ok and the svn will begin to download.
 
-*WAIT*, you're not done yet. You need one last thing if you're a *Windows user*. You require the filestream module. 
+*WAIT*, you're not done yet. You need one last thing if you're a *Windows user*. For faster saving, you require the filestream module. (*NOTE:* For users who have paid hosting that do not allow .dll files, you don't require the module, but saving will be slower due to a GMod bug.)
 
 Navigate to the bin directory at, ""C:/Program Files/Steam/steamapps/*USER NAME*/garrysmod/garrysmod/lua/bin/" (*_if you do not have a lua or bin folder then create them_.*) 
 
