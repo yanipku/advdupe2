@@ -51,7 +51,7 @@ The Area Auto Save will save an area or a contraption every set amount of minute
 
 To auto save an area, first you need to select the directory to save the file to. Click the Browse button in the Area Auto Save category and left click on the folder you want to have the file saved to, then enter a file named and click save.
 
-Now you can start your area copy by activating area copy, (Shift + Right Click), setting the size of the area copy box you want, and then pressing R to begin the Area Auto Save.
+Now Area Copy should already be activated; if not, activate it with, (Shift + Right Click), then set the size of the area copy box you want, and then press R to begin the Area Auto Save.
 
 You can save just a contraption by checking the "Contraption only" box in the Area Auto Save category and activating the Area Auto Save on a prop. This will copy the contraption no matter where it is located.
 
