@@ -29,9 +29,7 @@ Once done, press ok and the svn will begin to download.
 
 Navigate to the bin directory at, ""C:/Program Files/Steam/steamapps/*USER NAME*/garrysmod/garrysmod/lua/bin/" (*_if you do not have a lua or bin folder then create them_.*) 
 
-Right click a blank space in the folder and click SVN Checkout... again and this time enter this URL: http://advdupe2.googlecode.com/svn/trunk/lua/bin/gmsv_ad2filestream_win32.dll 
-
-and press ok.
+Download the module from this url and put it in the bin folder. http://advdupe2.googlecode.com/svn/trunk/lua/bin/gmsv_ad2filestream_win32.dll 
 
 http://i.imgur.com/KwIPw.png
 
