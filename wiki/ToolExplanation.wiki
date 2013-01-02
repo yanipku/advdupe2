@@ -1,6 +1,7 @@
 ----
 ===File Browser===
  * *Open File* - To open a file, either Double Click it or Right Click it and press Open.
+ * *Preview File* - To preview a file, right click a file and click Preview. The tool screen will now say Preview instead of Ready and ghosting of the preview will begin. To remove the preview, simply put the tool away and pull it back out.
  * *Save File* - To save a file, Right Click a folder and click Save, then enter a file name, (optional)enter a description, and click Save or press Enter.
  * *Create a New Folder* - Right Click a folder and enter a folder name then press Enter or the New Folder button.
  * *Delete File* - To delete a file Right Click it and press Delete, then confirm that you want to delete it by pressing the trash can. You can also delete a whole folder.
